@@ -89,3 +89,12 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+
+void
+sys_inc_num(void)
+{
+  int n;
+  argint(0, &n);
+  inc_num(n);
+  return;
+}

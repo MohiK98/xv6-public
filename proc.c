@@ -532,3 +532,10 @@ procdump(void)
     cprintf("\n");
   }
 }
+
+void
+inc_num(int n)
+{
+  cprintf("%d\n", n+1);
+  return;
+}
