@@ -98,3 +98,12 @@ sys_inc_num(void)
   inc_num(n);
   return;
 }
+
+void
+sys_invoked_syscalls(void)
+{
+  int pid;
+  argint(0, &pid);
+  invoked_syscalls(pid);
+  return;
+}

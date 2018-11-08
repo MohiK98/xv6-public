@@ -127,6 +127,7 @@ static int (*syscalls[])(void) = {
 [SYS_mkdir]   sys_mkdir,
 [SYS_close]   sys_close,
 [SYS_inc_num] sys_inc_num,
+[SYS_invoked_syscalls] sys_invoked_syscalls,
 };
 
 void
@@ -134,7 +135,7 @@ syscall(void)
 {
   int num;
   struct proc *curproc = myproc();
-
+  
   num = curproc->tf->eax;
   if(num > 0 && num < NELEM(syscalls) && syscalls[num]) {
     curproc->tf->eax = syscalls[num]();

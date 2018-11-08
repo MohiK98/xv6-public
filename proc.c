@@ -6,6 +6,8 @@
 #include "x86.h"
 #include "proc.h"
 #include "spinlock.h"
+// #include "unistd.h"
+#include "date.h"
 
 struct {
   struct spinlock lock;
@@ -537,5 +539,22 @@ void
 inc_num(int n)
 {
   cprintf("%d\n", n+1);
+  return;
+}
+
+void
+invoked_syscalls(int pid)
+{
+  int i, j;
+  for (i = 0; i < process_info_counter; i++)
+  {
+    if(process_details[i].pid == pid) 
+    {
+      for (j = 0; j <‌ process_details[i].counter; j++) 
+      {
+        // print
+      }
+    }
+  }
   return;
 }

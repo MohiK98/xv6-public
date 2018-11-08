@@ -1,5 +1,3 @@
-// #include 
-
 // Per-CPU state
 struct cpu {
   uchar apicid;                // Local APIC ID
@@ -59,14 +57,26 @@ struct proc {
 //   fixed-size stack
 //   expandable heap
 
-// struct syscall_info {
-//   int nubmber;
-//   char name[17];
-//   // arguments
-// };
+struct argument {
+  int count;
+  char arg_name[3];
+};
 
+struct syscall_info {
+  int number;
+  char name[17];
+  struct argument arg;
+  struct rtcdate* t;
 
-// struct process_info {
-//   // pid_t pid;
-//   struct syscall_info syscalls_info[85];
-// };
+};
+
+struct process_info {
+  int pid;
+  int counter;
+  struct syscall_info syscall_info[85];
+};
+
+struct process_info process_details[128];
+int process_info_counter = 0;
+// struct rtcdate r;
+// cmostome(&r)
