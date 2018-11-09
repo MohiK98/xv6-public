@@ -6,6 +6,7 @@
 #include "proc.h"
 #include "x86.h"
 #include "syscall.h"
+#include "date.h"
 
 // User code makes a system call with INT T_SYSCALL.
 // System call number in %eax.
@@ -103,6 +104,9 @@ extern int sys_wait(void);
 extern int sys_write(void);
 extern int sys_uptime(void);
 extern int sys_inc_num(void);
+extern int sys_invoked_syscalls(void);
+extern int sys_sort_syscalls(void);
+extern int sys_get_count(void);
 
 static int (*syscalls[])(void) = {
 [SYS_fork]    sys_fork,
@@ -128,6 +132,8 @@ static int (*syscalls[])(void) = {
 [SYS_close]   sys_close,
 [SYS_inc_num] sys_inc_num,
 [SYS_invoked_syscalls] sys_invoked_syscalls,
+[SYS_sort_syscalls] sys_sort_syscalls,
+[SYS_get_count] sys_get_count,
 };
 
 void
@@ -137,6 +143,21 @@ syscall(void)
   struct proc *curproc = myproc();
   
   num = curproc->tf->eax;
+
+  int i;
+  for(i=0 ; i< process_details_counter ; i++){
+    if (process_details[i].pid == curproc->pid){
+      struct syscall_info* syscall_struct = &process_details[i].syscall_det[process_details[i].counter];
+      syscall_struct->number = num;
+      syscall_struct->name = syscall_arr[num-1];
+      struct rtcdate r;
+      cmostime(&r);
+      syscall_struct->t = &r;
+      process_details[i].counter += 1;
+      break;
+    }
+  }
+
   if(num > 0 && num < NELEM(syscalls) && syscalls[num]) {
     curproc->tf->eax = syscalls[num]();
   } else {
@@ -145,3 +166,13 @@ syscall(void)
     curproc->tf->eax = -1;
   }
 }
+
+
+
+
+// Fetch the nth 32-bit system call argument.
+// int
+// argint(int n, int *ip)
+// {
+//   return fetchint((myproc()->tf->esp) + 4 + 4*n, ip);
+// }

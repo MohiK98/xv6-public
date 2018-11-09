@@ -9,6 +9,61 @@
 // #include "unistd.h"
 #include "date.h"
 
+
+void init_syscall_map() {
+  syscall_arr[0] = "fork";
+  syscall_arr[1] = "exit";
+  syscall_arr[2] = "wait";
+  syscall_arr[3] = "pipe";
+  syscall_arr[4] = "read";
+  syscall_arr[5] = "kill";
+  syscall_arr[6] = "exec";
+  syscall_arr[7] = "fstat";
+  syscall_arr[8] = "chdir";
+  syscall_arr[9] = "dup";
+  syscall_arr[10] = "getpid";
+  syscall_arr[11] = "sbrk";
+  syscall_arr[12] = "sleep"; // sleep(void *chan, struct spinlock *lk)
+  syscall_arr[13] = "uptime";
+  syscall_arr[14] = "open";
+  syscall_arr[15] = "write";
+  syscall_arr[16] = "mknod";
+  syscall_arr[17] = "unlink";
+  syscall_arr[18] = "link";
+  syscall_arr[19] = "mkdir";
+  syscall_arr[20] = "close";
+  syscall_arr[21] = "inc_num";
+  syscall_arr[22] = "invoked_syscalls";
+
+  // syscall_arg_count[0] = 0;
+  // syscall_arg_count[1] = 0;
+  // syscall_arg_count[2] = 0;
+  // syscall_arg_count[3] = 1;
+  // syscall_arg_count[4] = ;
+  // syscall_arg_count[5] = 1;
+  // syscall_arg_count[6] = ;
+  // syscall_arg_count[7] = ;
+  // syscall_arg_count[8] = ;
+  // syscall_arg_count[9] = ;
+  // syscall_arg_count[10] = ;
+  // syscall_arg_count[11] = ;
+  // syscall_arg_count[12] = ;
+  // syscall_arg_count[13] = ;
+  // syscall_arg_count[14] = ;
+  // syscall_arg_count[15] = ;
+  // syscall_arg_count[16] = ;
+  // syscall_arg_count[17] = ;
+  // syscall_arg_count[18] = ;
+  // syscall_arg_count[19] = ;
+  // syscall_arg_count[20] = 1;
+  // syscall_arg_count[21] = 1;
+  // syscall_arg_count[22] = 1;
+}
+
+
+struct process_info process_details[128];
+int process_details_counter = 0;
+
 struct {
   struct spinlock lock;
   struct proc proc[NPROC];
@@ -219,6 +274,11 @@ fork(void)
   np->state = RUNNABLE;
 
   release(&ptable.lock);
+
+  // storing new prcoess info in process_info_array
+  process_details[process_details_counter].pid = pid;
+  process_details[process_details_counter].counter = 0;
+  process_details_counter += 1;
 
   return pid;
 }
@@ -546,15 +606,88 @@ void
 invoked_syscalls(int pid)
 {
   int i, j;
-  for (i = 0; i < process_info_counter; i++)
+  int found = 0;
+  for (i = 0; i < process_details_counter; i++)
   {
     if(process_details[i].pid == pid) 
     {
-      for (j = 0; j <‌ process_details[i].counter; j++) 
+      found = 1;
+      for (j = 0; j < process_details[i].counter; j++) 
       {
-        // print
+        struct syscall_info* syscall_addr = &process_details[i].syscall_det[j];
+        cprintf("number: %d  name: %s  d:‌ %d ",syscall_addr->number,syscall_addr->name, syscall_addr->t->day);
+        cprintf("h:‌ %d m:‌ %d s: %d\n", syscall_addr->t->hour, syscall_addr->t->minute, syscall_addr->t->second);
+
       }
     }
   }
+  if (found == 0) {
+    cprintf("No such pid found...\n");
+  }
+  return;
+}
+
+void swap(struct syscall_info *xp, struct syscall_info *yp) 
+{ 
+    struct syscall_info temp = *xp; 
+    *xp = *yp; 
+    *yp = temp; 
+} 
+  
+void bubbleSort(struct syscall_info arr[], int n) 
+{ 
+   int i, j; 
+   for (i = 0; i < n-1; i++)       
+  
+       // Last i elements are already in place    
+       for (j = 0; j < n-i-1; j++)  
+           if (arr[j].number <= arr[j+1].number) 
+              swap(&arr[j], &arr[j+1]); 
+} 
+
+
+void
+sort_syscalls(int pid)
+{
+  int i, index;
+  struct process_info* proc_struct = 0;
+  for(i = 0; i < process_details_counter; i++ ){
+    if (process_details[i].pid == pid){
+      proc_struct = &process_details[i];
+      index = i;
+      break;
+    }
+  }
+  if (proc_struct == 0) {
+    cprintf("No such pid found...\n");
+    return;
+  }
+  bubbleSort(process_details[index].syscall_det, process_details[index].counter);
+  return;
+}
+
+void
+get_count(int pid, int num)
+{
+  int i, count = 0;
+  struct process_info* proc_struct = 0;
+  for (i = 0; i < process_details_counter; i++)
+  {
+    if (process_details[i].pid == pid)
+    {
+      proc_struct = &process_details[i];
+      break;
+    }    
+  }
+  if (proc_struct == 0)
+  {
+    cprintf("No such pid found...\n");
+  }
+  for (i = 0; i < proc_struct->counter; i++)
+  {
+    if (proc_struct->syscall_det[i].number == num)
+      count ++;
+  }
+  cprintf("%d\n", count);
   return;
 }

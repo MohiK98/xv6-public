@@ -107,3 +107,22 @@ sys_invoked_syscalls(void)
   invoked_syscalls(pid);
   return;
 }
+
+void
+sys_sort_syscalls(void)
+{
+  int pid;
+  argint(0, &pid);
+  sort_syscalls(pid);
+  return;
+}
+
+void
+sys_get_count(void)
+{
+  int pid, num;
+  argint(0, &pid);
+  argint(1, &num);
+  get_count(pid, num);
+  return;
+}

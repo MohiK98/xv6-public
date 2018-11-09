@@ -57,6 +57,8 @@ struct proc {
 //   fixed-size stack
 //   expandable heap
 
+int process_details_counter;
+
 struct argument {
   int count;
   char arg_name[3];
@@ -64,7 +66,7 @@ struct argument {
 
 struct syscall_info {
   int number;
-  char name[17];
+  char *name;
   struct argument arg;
   struct rtcdate* t;
 
@@ -73,10 +75,14 @@ struct syscall_info {
 struct process_info {
   int pid;
   int counter;
-  struct syscall_info syscall_info[85];
+  struct syscall_info syscall_det[85];
 };
 
 struct process_info process_details[128];
-int process_info_counter = 0;
+char* syscall_arr[23];
+int syscall_arg_count[23];
+
+// struct process_info process_details[128];
+// int process_info_counter = 0;
 // struct rtcdate r;
 // cmostome(&r)
