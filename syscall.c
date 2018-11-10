@@ -152,9 +152,12 @@ syscall(void)
       struct syscall_info* syscall_struct = &process_details[i].syscall_det[process_details[i].counter];
       syscall_struct->number = num;
       syscall_struct->name = syscall_arr[num-1];
+      syscall_struct->pid = curproc->pid;
       struct rtcdate r;
       cmostime(&r);
       syscall_struct->t = r;
+      sys_log[sys_log_counter] = syscall_struct;
+      sys_log_counter ++;
       process_details[i].counter += 1;
       break;
     }

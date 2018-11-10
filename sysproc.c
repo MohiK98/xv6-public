@@ -10,12 +10,16 @@
 int
 sys_fork(void)
 {
+  int pid = myproc()->pid;
+  process_details[pid].syscall_det[process_details[pid].counter].arg_count = 0;
   return fork();
 }
 
 int
 sys_exit(void)
 {
+  int pid = myproc()->pid;
+  process_details[pid].syscall_det[process_details[pid].counter].arg_count = 0;
   exit();
   return 0;  // not reached
 }
@@ -23,6 +27,8 @@ sys_exit(void)
 int
 sys_wait(void)
 {
+  int pid = myproc()->pid;
+  process_details[pid].syscall_det[process_details[pid].counter].arg_count = 0;
   return wait();
 }
 
@@ -33,12 +39,19 @@ sys_kill(void)
 
   if(argint(0, &pid) < 0)
     return -1;
+  struct syscall_info *si = &process_details[pid].syscall_det[process_details[pid].counter];
+  si->arg_count = 1;
+  si->args[0].value = pid;
+  si->args[0].type = NUMBER;
   return kill(pid);
 }
 
 int
 sys_getpid(void)
 {
+  int pid = myproc()->pid;
+  struct syscall_info *si = &process_details[pid].syscall_det[process_details[pid].counter];
+  si->arg_count = 0;
   return myproc()->pid;
 }
 
@@ -53,6 +66,13 @@ sys_sbrk(void)
   addr = myproc()->sz;
   if(growproc(n) < 0)
     return -1;
+  
+  int pid = myproc()->pid;
+  struct syscall_info *si = &process_details[pid].syscall_det[process_details[pid].counter];
+  si->arg_count = 1;
+  si->args[0].value = n;
+  si->args[0].type = NUMBER;
+
   return addr;
 }
 
@@ -74,6 +94,13 @@ sys_sleep(void)
     sleep(&ticks, &tickslock);
   }
   release(&tickslock);
+
+  int pid = myproc()->pid;
+  struct syscall_info *si = &process_details[pid].syscall_det[process_details[pid].counter];
+  si->arg_count = 1;
+  si->args[0].value = n;
+  si->args[0].type = NUMBER;
+
   return 0;
 }
 
@@ -87,6 +114,11 @@ sys_uptime(void)
   acquire(&tickslock);
   xticks = ticks;
   release(&tickslock);
+
+  int pid = myproc()->pid;
+  struct syscall_info *si = &process_details[pid].syscall_det[process_details[pid].counter];
+  si->arg_count = 0;
+
   return xticks;
 }
 
@@ -95,8 +127,14 @@ sys_inc_num(void)
 {
   int n;
   argint(0, &n);
-  inc_num(n);
-  return;
+
+  int pid = myproc()->pid;
+  struct syscall_info *si = &process_details[pid].syscall_det[process_details[pid].counter];
+  si->arg_count = 1;
+  si->args[0].value = n;
+  si->args[0].type = NUMBER;
+
+  return inc_num(n);
 }
 
 void
@@ -104,8 +142,15 @@ sys_invoked_syscalls(void)
 {
   int pid;
   argint(0, &pid);
-  invoked_syscalls(pid);
-  return;
+
+  int p = myproc()->pid;
+  struct syscall_info *si = &process_details[p].syscall_det[process_details[p].counter];
+  si->arg_count = 1;
+  si->args[0].value = pid;
+  si->args[0].type = NUMBER;
+
+
+  return invoked_syscalls(pid);
 }
 
 void
@@ -113,8 +158,14 @@ sys_sort_syscalls(void)
 {
   int pid;
   argint(0, &pid);
-  sort_syscalls(pid);
-  return;
+
+  int p = myproc()->pid;
+  struct syscall_info *si = &process_details[p].syscall_det[process_details[p].counter];
+  si->arg_count = 1;
+  si->args[0].value = pid;
+  si->args[0].type = NUMBER;
+
+  return sort_syscalls(pid);
 }
 
 void
@@ -123,12 +174,23 @@ sys_get_count(void)
   int pid, num;
   argint(0, &pid);
   argint(1, &num);
-  get_count(pid, num);
-  return;
+
+  int p = myproc()->pid;
+  struct syscall_info *si = &process_details[p].syscall_det[process_details[p].counter];
+  si->arg_count = 2;
+  si->args[0].value = pid;
+  si->args[0].type = NUMBER;
+  si->args[0].value = num;
+  si->args[0].type = NUMBER;
+
+  return get_count(pid, num);
 }
 
 void
 sys_log_syscalls(void)
 {
+  int p = myproc()->pid;
+  struct syscall_info *si = &process_details[p].syscall_det[process_details[p].counter];
+  si->arg_count = 0;
   return log_syscalls();
 }

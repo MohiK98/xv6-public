@@ -61,26 +61,34 @@ struct proc {
 
 int process_details_counter;
 
+enum argtypes { NUMBER, STRING, POINTER };
+
+
 struct argument {
-  int count;
-  char arg_name[3];
+  int value;
+  enum argtypes type;   
+  char* string;
+  void* pointer;
 };
 
 struct syscall_info {
   int number;
+  int pid;
   char *name;
-  struct argument arg;
+  struct argument args[3];
   struct rtcdate t;
-
+  int arg_count;
 };
 
 struct process_info {
   int pid;
   int counter;
-  struct syscall_info syscall_det[85];
+  struct syscall_info syscall_det[128];
 };
 
 struct process_info process_details[128];
 char* syscall_arr[26];
-int syscall_arg_count[23];
+int syscall_arg_count[26];
 
+struct syscall_info* sys_log[16384];
+int sys_log_counter;

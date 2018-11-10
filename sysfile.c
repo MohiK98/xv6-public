@@ -1,6 +1,6 @@
 //
 // File-system system calls.
-// Mostly argument checking, since we don't trust
+// Mostly argument checking, se we don't trust
 // user code, and calls into file.c and fs.c.
 //
 
@@ -63,6 +63,11 @@ sys_dup(void)
   if((fd=fdalloc(f)) < 0)
     return -1;
   filedup(f);
+  int pid = myproc()->pid;
+  struct syscall_info *si = &process_details[pid].syscall_det[process_details[pid].counter];
+  si->arg_count = 1;
+  si->args[0].value = (int)f;
+  si->args[0].type = NUMBER;
   return fd;
 }
 
@@ -75,6 +80,15 @@ sys_read(void)
 
   if(argfd(0, 0, &f) < 0 || argint(2, &n) < 0 || argptr(1, &p, n) < 0)
     return -1;
+  int pid = myproc()->pid;
+  struct syscall_info *si = &process_details[pid].syscall_det[process_details[pid].counter-1];
+  si->arg_count = 3;
+  si->args[0].value = (int)f;
+  si->args[0].type = NUMBER;
+  si->args[1].pointer = p;
+  si->args[1].type = POINTER;
+  si->args[2].value = n;
+  si->args[2].type = NUMBER;
   return fileread(f, p, n);
 }
 
@@ -87,6 +101,17 @@ sys_write(void)
 
   if(argfd(0, 0, &f) < 0 || argint(2, &n) < 0 || argptr(1, &p, n) < 0)
     return -1;
+
+  int pid = myproc()->pid;
+  struct syscall_info *si = &process_details[pid].syscall_det[process_details[pid].counter];
+  si->arg_count = 3;
+  si->args[0].value = (int)f;
+  si->args[0].type = NUMBER;
+  si->args[1].pointer = p;
+  si->args[1].type = POINTER;
+  si->args[2].value = n;
+  si->args[2].type = NUMBER;
+
   return filewrite(f, p, n);
 }
 
@@ -100,6 +125,13 @@ sys_close(void)
     return -1;
   myproc()->ofile[fd] = 0;
   fileclose(f);
+
+  int pid = myproc()->pid;
+  struct syscall_info *si = &process_details[pid].syscall_det[process_details[pid].counter];
+  si->arg_count = 1;
+  si->args[0].value = (int)f;
+  si->args[0].type = NUMBER;
+
   return 0;
 }
 
@@ -111,6 +143,15 @@ sys_fstat(void)
 
   if(argfd(0, 0, &f) < 0 || argptr(1, (void*)&st, sizeof(*st)) < 0)
     return -1;
+
+  int pid = myproc()->pid;
+  struct syscall_info *si = &process_details[pid].syscall_det[process_details[pid].counter];
+  si->arg_count = 2;
+  si->args[0].value = (int)f;
+  si->args[0].type = NUMBER;
+  si->args[1].pointer = st;
+  si->args[1].type = POINTER;
+
   return filestat(f, st);
 }
 
@@ -152,6 +193,13 @@ sys_link(void)
   iput(ip);
 
   end_op();
+  int pid = myproc()->pid;
+  struct syscall_info *si = &process_details[pid].syscall_det[process_details[pid].counter];
+  si->arg_count = 2;
+  si->args[0].string = old;
+  si->args[0].type = STRING;
+  si->args[1].string = new;
+  si->args[1].type = STRING;
 
   return 0;
 
@@ -229,6 +277,12 @@ sys_unlink(void)
   iunlockput(ip);
 
   end_op();
+
+  int pid = myproc()->pid;
+  struct syscall_info *si = &process_details[pid].syscall_det[process_details[pid].counter];
+  si->arg_count = 1;
+  si->args[0].string = path;
+  si->args[0].type = STRING;
 
   return 0;
 
@@ -330,6 +384,15 @@ sys_open(void)
   f->off = 0;
   f->readable = !(omode & O_WRONLY);
   f->writable = (omode & O_WRONLY) || (omode & O_RDWR);
+  
+  int pid = myproc()->pid;
+  struct syscall_info *si = &process_details[pid].syscall_det[process_details[pid].counter];
+  si->arg_count = 2;
+  si->args[0].string = path;
+  si->args[0].type = STRING;
+  si->args[1].value = (int)f;
+  si->args[1].type = NUMBER;
+
   return fd;
 }
 
@@ -346,6 +409,13 @@ sys_mkdir(void)
   }
   iunlockput(ip);
   end_op();
+
+  int pid = myproc()->pid;
+  struct syscall_info *si = &process_details[pid].syscall_det[process_details[pid].counter];
+  si->arg_count = 1;
+  si->args[0].string = path;
+  si->args[0].type = STRING;
+
   return 0;
 }
 
@@ -366,6 +436,17 @@ sys_mknod(void)
   }
   iunlockput(ip);
   end_op();
+  
+  int pid = myproc()->pid;
+  struct syscall_info *si = &process_details[pid].syscall_det[process_details[pid].counter];
+  si->arg_count = 3;
+  si->args[0].string = path;
+  si->args[0].type = STRING;
+  si->args[1].value = major;
+  si->args[1].type = NUMBER;
+  si->args[2].value = minor;
+  si->args[2].type = NUMBER;
+
   return 0;
 }
 
@@ -391,6 +472,13 @@ sys_chdir(void)
   iput(curproc->cwd);
   end_op();
   curproc->cwd = ip;
+
+  int pid = myproc()->pid;
+  struct syscall_info *si = &process_details[pid].syscall_det[process_details[pid].counter];
+  si->arg_count = 1;
+  si->args[0].string = path;
+  si->args[0].type = STRING;
+
   return 0;
 }
 
@@ -417,6 +505,13 @@ sys_exec(void)
     if(fetchstr(uarg, &argv[i]) < 0)
       return -1;
   }
+  int pid = myproc()->pid;
+  struct syscall_info *si = &process_details[pid].syscall_det[process_details[pid].counter];
+  si->arg_count = 2;
+  si->args[0].string = path;
+  si->args[0].type = STRING;
+  si->args[0].pointer = argv;
+  si->args[0].type = POINTER;
   return exec(path, argv);
 }
 
@@ -441,5 +536,10 @@ sys_pipe(void)
   }
   fd[0] = fd0;
   fd[1] = fd1;
+  int pid = myproc()->pid;
+  struct syscall_info *si = &process_details[pid].syscall_det[process_details[pid].counter];
+  si->arg_count = 1;
+  si->args[0].pointer = fd;
+  si->args[0].type = POINTER;
   return 0;
 }

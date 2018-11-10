@@ -6,11 +6,14 @@
 #include "x86.h"
 #include "proc.h"
 #include "spinlock.h"
-// #include "unistd.h"
 #include "date.h"
-
+#define NUMBER 0
+#define STRING 2
+#define POINTER 3
 
 void init_syscall_map() {
+  sys_log_counter = 0;
+  process_details_counter = 2;
   syscall_arr[0] = "fork";
   syscall_arr[1] = "exit";
   syscall_arr[2] = "wait";
@@ -37,31 +40,6 @@ void init_syscall_map() {
   syscall_arr[23] = "sort_syscalls";
   syscall_arr[24] = "get_count";
   syscall_arr[25] = "log_syscalls";
-
-
-  // syscall_arg_count[0] = 0;
-  // syscall_arg_count[1] = 0;
-  // syscall_arg_count[2] = 0;
-  // syscall_arg_count[3] = 1;
-  // syscall_arg_count[4] = ;
-  // syscall_arg_count[5] = 1;
-  // syscall_arg_count[6] = ;
-  // syscall_arg_count[7] = ;
-  // syscall_arg_count[8] = ;
-  // syscall_arg_count[9] = ;
-  // syscall_arg_count[10] = ;
-  // syscall_arg_count[11] = ;
-  // syscall_arg_count[12] = ;
-  // syscall_arg_count[13] = ;
-  // syscall_arg_count[14] = ;
-  // syscall_arg_count[15] = ;
-  // syscall_arg_count[16] = ;
-  // syscall_arg_count[17] = ;
-  // syscall_arg_count[18] = ;
-  // syscall_arg_count[19] = ;
-  // syscall_arg_count[20] = 1;
-  // syscall_arg_count[21] = 1;
-  // syscall_arg_count[22] = 1;
 }
 
 
@@ -609,9 +587,9 @@ inc_num(int n)
 void
 invoked_syscalls(int pid)
 {
-  int i, j;
+  int i, j, k;
   int found = 0;
-  for (i = 0; i < process_details_counter; i++)
+  for (i = 2; i < process_details_counter; i++)
   {
     if(process_details[i].pid == pid) 
     {
@@ -621,7 +599,19 @@ invoked_syscalls(int pid)
         struct syscall_info* syscall_addr = &process_details[i].syscall_det[j];
         cprintf("number: %d  name: %s  d:‌ %d ",syscall_addr->number,syscall_addr->name, syscall_addr->t.day);
         cprintf("h:‌ %d m:‌ %d s: %d\n", syscall_addr->t.hour, syscall_addr->t.minute, syscall_addr->t.second);
-
+        for (k = 0; k < syscall_addr->arg_count; k++)
+        {
+          if (syscall_addr->args[k].type == NUMBER)
+          {
+            cprintf("int: %d ", syscall_addr->args[k].value);
+          } else if (syscall_addr->args[k].type == STRING)
+          {
+            cprintf("char*: %s ", syscall_addr->args[k].string);
+          } else {
+            cprintf("pointer: %d ", syscall_addr->args[k].pointer);
+          }
+          cprintf("\n");
+        }
       }
     }
   }
@@ -697,16 +687,14 @@ get_count(int pid, int num)
 void
 log_syscalls()
 {
-  int i, j;
-  for (i = 0; i < process_details_counter; i++)
+  int i;
+  for (i = 0; i < sys_log_counter; i++)
   {
-    for (j = 0; j < process_details[i].counter; j++)
-    {
-      cprintf("pid: %d, syscall: %s, ", process_details[i].pid, process_details[i].syscall_det[j].name);
-      struct rtcdate time = process_details[i].syscall_det[j].t;
-      cprintf("d: %d, h: %d, m: %d, s: %d\n", time.day, time.hour, time.minute, time.second);
-    }
+    cprintf("pid: %d, name: %s, ",sys_log[i]->pid, sys_log[i]->name);
+    struct rtcdate time = sys_log[i]->t;
+    cprintf("d:%d, h: %d, m:%d, s:%d\n", time.day, time.hour, time.minute, time.second);
   }
+
   return;
 }
 
