@@ -142,8 +142,14 @@ sys_invoked_syscalls(void)
 {
   int pid;
   argint(0, &pid);
-
-  int p = myproc()->pid;
+  int i;
+  for(i=0 ; i<process_details_counter ; i++){
+    if(process_details[i].pid == pid){
+      int p = i;
+      break;
+    }
+  }
+  // int p = myproc()->pid;
   struct syscall_info *si = &process_details[p].syscall_det[process_details[p].counter];
   si->arg_count = 1;
   si->args[0].value = pid;
@@ -176,6 +182,7 @@ sys_get_count(void)
   argint(1, &num);
 
   int p = myproc()->pid;
+  
   struct syscall_info *si = &process_details[p].syscall_det[process_details[p].counter];
   si->arg_count = 2;
   si->args[0].value = pid;
@@ -189,7 +196,14 @@ sys_get_count(void)
 void
 sys_log_syscalls(void)
 {
-  int p = myproc()->pid;
+  int pid = myproc()->pid;
+  int i;
+  for(i=0 ; i<process_details_counter ; i++){
+    if(process_details[i].pid == pid){
+      int p = i;
+      break;
+    }
+  }
   struct syscall_info *si = &process_details[p].syscall_det[process_details[p].counter];
   si->arg_count = 0;
   return log_syscalls();
