@@ -107,6 +107,7 @@ extern int sys_inc_num(void);
 extern int sys_invoked_syscalls(void);
 extern int sys_sort_syscalls(void);
 extern int sys_get_count(void);
+extern int sys_log_syscalls(void);
 
 static int (*syscalls[])(void) = {
 [SYS_fork]    sys_fork,
@@ -134,6 +135,7 @@ static int (*syscalls[])(void) = {
 [SYS_invoked_syscalls] sys_invoked_syscalls,
 [SYS_sort_syscalls] sys_sort_syscalls,
 [SYS_get_count] sys_get_count,
+[SYS_log_syscalls] sys_log_syscalls,
 };
 
 void
@@ -152,7 +154,7 @@ syscall(void)
       syscall_struct->name = syscall_arr[num-1];
       struct rtcdate r;
       cmostime(&r);
-      syscall_struct->t = &r;
+      syscall_struct->t = r;
       process_details[i].counter += 1;
       break;
     }

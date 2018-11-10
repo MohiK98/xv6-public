@@ -184,6 +184,7 @@ UPROGS=\
 	_invoked_syscalls\
 	_sort_syscalls\
 	_get_count\
+	_log_syscalls\
 	_zombie\
 
 fs.img: mkfs README $(UPROGS)
@@ -253,7 +254,8 @@ qemu-nox-gdb: fs.img xv6.img .gdbinit
 
 EXTRA=\
 	mkfs.c ulib.c user.h cat.c echo.c forktest.c grep.c kill.c\
-	ln.c ls.c mkdir.c rm.c stressfs.c usertests.c wc.c inc_num.c invoked_syscalls.c sort_syscalls.c get_count.c zombie.c\
+	ln.c ls.c mkdir.c rm.c stressfs.c usertests.c wc.c inc_num.c invoked_syscalls.c sort_syscalls.c \
+	get_count.c log_syscalls.c zombie.c\
 	printf.c umalloc.c \
 	README dot-bochsrc *.pl toc.* runoff runoff1 runoff.list\
 	.gdbinit.tmpl gdbutil\

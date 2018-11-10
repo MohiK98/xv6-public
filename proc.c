@@ -34,6 +34,10 @@ void init_syscall_map() {
   syscall_arr[20] = "close";
   syscall_arr[21] = "inc_num";
   syscall_arr[22] = "invoked_syscalls";
+  syscall_arr[23] = "sort_syscalls";
+  syscall_arr[24] = "get_count";
+  syscall_arr[25] = "log_syscalls";
+
 
   // syscall_arg_count[0] = 0;
   // syscall_arg_count[1] = 0;
@@ -615,8 +619,8 @@ invoked_syscalls(int pid)
       for (j = 0; j < process_details[i].counter; j++) 
       {
         struct syscall_info* syscall_addr = &process_details[i].syscall_det[j];
-        cprintf("number: %d  name: %s  d:‌ %d ",syscall_addr->number,syscall_addr->name, syscall_addr->t->day);
-        cprintf("h:‌ %d m:‌ %d s: %d\n", syscall_addr->t->hour, syscall_addr->t->minute, syscall_addr->t->second);
+        cprintf("number: %d  name: %s  d:‌ %d ",syscall_addr->number,syscall_addr->name, syscall_addr->t.day);
+        cprintf("h:‌ %d m:‌ %d s: %d\n", syscall_addr->t.hour, syscall_addr->t.minute, syscall_addr->t.second);
 
       }
     }
@@ -634,15 +638,13 @@ void swap(struct syscall_info *xp, struct syscall_info *yp)
     *yp = temp; 
 } 
   
-void bubbleSort(struct syscall_info arr[], int n) 
+void bubble_sort(struct syscall_info arr[], int n) 
 { 
    int i, j; 
    for (i = 0; i < n-1; i++)       
-  
-       // Last i elements are already in place    
-       for (j = 0; j < n-i-1; j++)  
-           if (arr[j].number <= arr[j+1].number) 
-              swap(&arr[j], &arr[j+1]); 
+    for (j = 0; j < n-i-1; j++)  
+      if (arr[j].number <= arr[j+1].number) 
+        swap(&arr[j], &arr[j+1]); 
 } 
 
 
@@ -662,7 +664,7 @@ sort_syscalls(int pid)
     cprintf("No such pid found...\n");
     return;
   }
-  bubbleSort(process_details[index].syscall_det, process_details[index].counter);
+  bubble_sort(process_details[index].syscall_det, process_details[index].counter);
   return;
 }
 
@@ -691,3 +693,20 @@ get_count(int pid, int num)
   cprintf("%d\n", count);
   return;
 }
+
+void
+log_syscalls()
+{
+  int i, j;
+  for (i = 0; i < process_details_counter; i++)
+  {
+    for (j = 0; j < process_details[i].counter; j++)
+    {
+      cprintf("pid: %d, syscall: %s, ", process_details[i].pid, process_details[i].syscall_det[j].name);
+      struct rtcdate time = process_details[i].syscall_det[j].t;
+      cprintf("d: %d, h: %d, m: %d, s: %d\n", time.day, time.hour, time.minute, time.second);
+    }
+  }
+  return;
+}
+

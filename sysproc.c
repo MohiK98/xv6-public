@@ -126,3 +126,9 @@ sys_get_count(void)
   get_count(pid, num);
   return;
 }
+
+void
+sys_log_syscalls(void)
+{
+  return log_syscalls();
+}

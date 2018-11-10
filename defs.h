@@ -125,6 +125,7 @@ void			inc_num(int);
 void			invoked_syscalls(int);
 void			sort_syscalls(int);
 void			get_count(int, int);
+void			log_syscalls(void);
 // swtch.S
 void            swtch(struct context**, struct context*);
 

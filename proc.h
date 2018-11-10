@@ -1,3 +1,5 @@
+#include "date.h"
+
 // Per-CPU state
 struct cpu {
   uchar apicid;                // Local APIC ID
@@ -68,7 +70,7 @@ struct syscall_info {
   int number;
   char *name;
   struct argument arg;
-  struct rtcdate* t;
+  struct rtcdate t;
 
 };
 
@@ -79,10 +81,6 @@ struct process_info {
 };
 
 struct process_info process_details[128];
-char* syscall_arr[23];
+char* syscall_arr[26];
 int syscall_arg_count[23];
 
-// struct process_info process_details[128];
-// int process_info_counter = 0;
-// struct rtcdate r;
-// cmostome(&r)
