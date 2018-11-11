@@ -104,3 +104,17 @@ memmove(void *vdst, const void *vsrc, int n)
     *dst++ = *src++;
   return vdst;
 }
+
+
+int inc_num(int x)
+{
+  int num;
+
+  asm("movl %%ebx, %0":"=r"(num));
+  asm("movl %0, %%ebx"::"r"(x));
+  asm("movl $22, %eax");
+  asm("int $64");
+  asm("movl %0, %%ebx"::"r"(num));
+  return 0;
+}
+

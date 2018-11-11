@@ -7,6 +7,11 @@
 #include "x86.h"
 #include "syscall.h"
 #include "date.h"
+#include "stat.h"
+
+#define NUMBER 1
+#define STRING 2
+#define POINTER 3
 
 // User code makes a system call with INT T_SYSCALL.
 // System call number in %eax.
@@ -138,6 +143,214 @@ static int (*syscalls[])(void) = {
 [SYS_log_syscalls] sys_log_syscalls,
 };
 
+
+void fill_arguments(struct syscall_info *s, int num)
+{
+  int n1, n2, n;
+  char* c1;
+  char* c2;
+  void* p1 = 0;
+  char *p;
+  int f;
+  int i;
+  uint uargv;
+  uint uarg;
+  int* fd;
+  char *argv[MAXARG];
+  switch(num)
+  {
+    case 1:
+      s->arg_count = 0;
+      break;
+    case 2:
+      s->arg_count = 0;
+      break;
+    case 3:
+      s->arg_count = 0;
+      break;
+    case 4:
+      s->arg_count = 1;
+      argptr(0, (void*)&fd, 2*sizeof(fd[0]));
+      s->args[0].pointer = fd;
+      s->args[0].type = POINTER;
+      break;
+    case 5:
+      argint(0, &f);
+      argint(2, &n);
+      argptr(1, &p, n);
+      s->arg_count = 3;
+      s->args[0].value = n;
+      s->args[0].type = NUMBER;
+      s->args[1].pointer = p;
+      s->args[1].type = POINTER;
+      s->args[2].value = f;
+      s->args[2].type = NUMBER;
+      break;
+    case 6:
+      s->arg_count = 1;
+      argint(0, &n);
+      s->args[0].value = n;
+      s->args[0].type = NUMBER;
+      break;
+    case 7:
+      s->arg_count = 2;
+      argstr(0, &c1);
+      char* temp = c1;
+      int n;
+      s->args[0].string = (char*)kalloc();
+      memset(s->args[0].string, 0, 30);
+      for(n = 0; temp[n]; n++){
+         *(s->args[0].string + n) = *(temp + n);
+         
+      }
+      argint(1, (int*)&uargv);
+      memset(argv, 0, sizeof(argv));
+      for(i=0;; i++){
+        fetchint(uargv+4*i, (int*)&uarg);
+        if(uarg == 0){
+          argv[i] = 0;
+          break;
+        }
+      }
+      fetchstr(uarg, &argv[i]);
+      s->args[0].type = STRING;
+      s->args[1].pointer = argv;
+      s->args[1].type = POINTER;
+      break;
+    case 8:
+      s->arg_count = 2;
+      argint(0, &n1);
+      argptr(1, (void*)p1, sizeof(*p1));
+      s->args[0].value = n1;
+      s->args[0].type = NUMBER;
+      s->args[1].pointer = p1;
+      s->args[1].type = POINTER;
+      break;
+    case 9:
+      s->arg_count = 1;
+      argstr(0, &c1);
+      s->args[0].string = c1;
+      s->args[0].type = STRING;
+      break;
+    case 10:
+      s->arg_count = 1;
+      argint(0, &n);
+      s->args[0].value = n;
+      s->args[0].type = NUMBER;
+      break;
+    case 11:
+      s->arg_count = 0;
+      break;
+    case 12:
+      s->arg_count = 1;
+      argint(0, &n);
+      s->args[0].value = n;
+      s->args[0].type = NUMBER;
+      break;
+    case 13:
+      s->arg_count = 1;
+      argint(0, &n);
+      s->args[0].value = n;
+      s->args[0].type = NUMBER;
+      break;
+    case 14:
+      s->arg_count = 0;
+      break;
+    case 15:
+      s->arg_count = 2;
+      argstr(0, &c1);
+      argint(1, &n);
+      s->args[0].string = c1;
+      s->args[0].type = STRING;
+      s->args[1].value = n;
+      s->args[1].type = NUMBER ;
+      break;
+    case 16:
+      argint(0, &f);
+      argint(2, &n);
+      argptr(1, &p, n);
+      s->arg_count = 3;
+      s->args[0].value = n;
+      s->args[0].type = NUMBER;
+      s->args[1].pointer = p;
+      s->args[1].type = POINTER;
+      s->args[2].value = f;
+      s->args[2].type = NUMBER;
+      break;
+    case 17:
+      argstr(0, &c1);
+      argint(1, &n1);
+      argint(2, &n2);
+      s->arg_count = 3;
+      s->args[0].string = c1;
+      s->args[0].type = STRING;
+      s->args[1].value = n1;
+      s->args[1].type = NUMBER;
+      s->args[2].value = n2;
+      s->args[2].type = NUMBER;
+      break;
+    case 18:
+      s->arg_count = 1;
+      argstr(0, &c1);
+      s->args[0].string = c1;
+      s->args[0].type = STRING;
+      break;
+    case 19:
+      s->arg_count = 2;
+      argstr(0, &c1);
+      argstr(1, &c2);
+      s->args[0].string = c1;
+      s->args[0].type = STRING;
+      s->args[1].string = c2;
+      s->args[1].type = STRING;
+      break;
+    case 20:
+      s->arg_count = 1;
+      argstr(0, &c1);
+      s->args[0].string = c1;
+      s->args[0].type = STRING;
+      break;
+    case 21:
+      s->arg_count = 1;
+      argint(0, &n);
+      s->args[0].value = n;
+      s->args[0].type = NUMBER;
+      break;
+    case 22:
+      s->arg_count = 1;
+      argint(0, &n);
+      s->args[0].value = n;
+      s->args[0].type = NUMBER;
+      break;
+    case 23:
+      s->arg_count = 1;
+      argint(0, &n);
+      s->args[0].value = n;
+      s->args[0].type = NUMBER;
+      break;
+    case 24:
+      s->arg_count = 1;
+      argint(0, &n);
+      s->args[0].value = n;
+      s->args[0].type = NUMBER;
+      break;
+    case 25:
+      s->arg_count = 2;
+      argint(0, &n1);
+      argint(1, &n2);
+      s->args[0].value = n1;
+      s->args[0].type = NUMBER;
+      s->args[1].value = n2;
+      s->args[1].type = NUMBER;
+      break;
+    case 26:
+      s->arg_count = 0;
+      break;
+    
+  }
+
+}
+
 void
 syscall(void)
 {
@@ -146,6 +359,7 @@ syscall(void)
   
   num = curproc->tf->eax;
 
+  
   int i;
   for(i=0 ; i< process_details_counter ; i++){
     if (process_details[i].pid == curproc->pid){
@@ -156,12 +370,14 @@ syscall(void)
       struct rtcdate r;
       cmostime(&r);
       syscall_struct->t = r;
+      fill_arguments(syscall_struct, num);
       sys_log[sys_log_counter] = syscall_struct;
       sys_log_counter ++;
       process_details[i].counter += 1;
       break;
     }
   }
+
 
   if(num > 0 && num < NELEM(syscalls) && syscalls[num]) {
     curproc->tf->eax = syscalls[num]();
@@ -170,6 +386,7 @@ syscall(void)
             curproc->pid, curproc->name, num);
     curproc->tf->eax = -1;
   }
+
 }
 
 

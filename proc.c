@@ -7,13 +7,13 @@
 #include "proc.h"
 #include "spinlock.h"
 #include "date.h"
-#define NUMBER 0
+#define NUMBER 1
 #define STRING 2
 #define POINTER 3
 
 void init_syscall_map() {
   sys_log_counter = 0;
-  process_details_counter = 2;
+  process_details_counter = 0;
   syscall_arr[0] = "fork";
   syscall_arr[1] = "exit";
   syscall_arr[2] = "wait";
@@ -163,7 +163,6 @@ userinit(void)
   extern char _binary_initcode_start[], _binary_initcode_size[];
 
   p = allocproc();
-  
   initproc = p;
   if((p->pgdir = setupkvm()) == 0)
     panic("userinit: out of memory?");
@@ -589,7 +588,7 @@ invoked_syscalls(int pid)
 {
   int i, j, k;
   int found = 0;
-  for (i = 2; i < process_details_counter; i++)
+  for (i = 0; i < process_details_counter; i++)
   {
     if(process_details[i].pid == pid) 
     {
@@ -597,18 +596,19 @@ invoked_syscalls(int pid)
       for (j = 0; j < process_details[i].counter; j++) 
       {
         struct syscall_info* syscall_addr = &process_details[i].syscall_det[j];
-        cprintf("number: %d  name: %s  d:‌ %d ",syscall_addr->number,syscall_addr->name, syscall_addr->t.day);
-        cprintf("h:‌ %d m:‌ %d s: %d\n", syscall_addr->t.hour, syscall_addr->t.minute, syscall_addr->t.second);
+        cprintf("number: %d  name: %s  d: %d ",syscall_addr->number,syscall_addr->name, syscall_addr->t.day);
+        cprintf("h: %d m: %d s: %d\n", syscall_addr->t.hour, syscall_addr->t.minute, syscall_addr->t.second);
         for (k = 0; k < syscall_addr->arg_count; k++)
         {
           if (syscall_addr->args[k].type == NUMBER)
           {
             cprintf("int: %d ", syscall_addr->args[k].value);
+          } else if (syscall_addr->args[k].type == POINTER)
+          {
+            cprintf("pointer: %p ", syscall_addr->args[k].pointer);
           } else if (syscall_addr->args[k].type == STRING)
           {
             cprintf("char*: %s ", syscall_addr->args[k].string);
-          } else {
-            cprintf("pointer: %d ", syscall_addr->args[k].pointer);
           }
           cprintf("\n");
         }

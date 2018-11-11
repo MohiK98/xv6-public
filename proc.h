@@ -65,8 +65,8 @@ enum argtypes { NUMBER, STRING, POINTER };
 
 
 struct argument {
+  int type;   
   int value;
-  enum argtypes type;   
   char* string;
   void* pointer;
 };
