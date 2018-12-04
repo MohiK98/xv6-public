@@ -1,3 +1,4 @@
+
 #include "syscall.h"
 #include "traps.h"
 
@@ -33,3 +34,8 @@ SYSCALL(invoked_syscalls)
 SYSCALL(sort_syscalls)
 SYSCALL(get_count)
 SYSCALL(log_syscalls)
+SYSCALL(ticketlockinit)
+SYSCALL(ticketlocktest)
+SYSCALL(rwinit)
+SYSCALL(rwtest)
+

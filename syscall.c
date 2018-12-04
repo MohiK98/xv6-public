@@ -113,6 +113,10 @@ extern int sys_invoked_syscalls(void);
 extern int sys_sort_syscalls(void);
 extern int sys_get_count(void);
 extern int sys_log_syscalls(void);
+extern int sys_ticketlockinit(void);
+extern int sys_ticketlocktest(void);
+extern int sys_rwinit(void);
+extern int sys_rwtest(void);
 
 static int (*syscalls[])(void) = {
 [SYS_fork]    sys_fork,
@@ -141,6 +145,10 @@ static int (*syscalls[])(void) = {
 [SYS_sort_syscalls] sys_sort_syscalls,
 [SYS_get_count] sys_get_count,
 [SYS_log_syscalls] sys_log_syscalls,
+[SYS_ticketlockinit] sys_ticketlockinit,
+[SYS_ticketlocktest] sys_ticketlocktest ,
+[SYS_rwinit] sys_rwinit ,
+[SYS_rwtest] sys_rwtest ,
 };
 
 

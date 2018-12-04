@@ -87,8 +87,8 @@ struct process_info {
 };
 
 struct process_info process_details[128];
-char* syscall_arr[26];
-int syscall_arg_count[26];
+char* syscall_arr[30];
+int syscall_arg_count[30];
 
 struct syscall_info* sys_log[16384];
 int sys_log_counter;

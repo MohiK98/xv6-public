@@ -126,6 +126,12 @@ void			invoked_syscalls(int);
 void			sort_syscalls(int);
 void			get_count(int, int);
 void			log_syscalls(void);
+void			ticketlockinit(void);
+void 			ticketlocktest(void);
+void 			rwinit(void);
+void			rwtest(void);
+
+
 // swtch.S
 void            swtch(struct context**, struct context*);
 

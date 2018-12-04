@@ -136,3 +136,23 @@ sys_log_syscalls(void)
 {
   return log_syscalls();
 }
+
+void sys_ticketlockinit(void)
+{
+  return ticketlockinit();
+}
+
+void sys_ticketlocktest(void)
+{
+  return ticketlocktest();
+}
+
+void sys_rwinit(void)
+{
+  return rwinit();
+}
+
+void sys_rwtest(void)
+{
+  return rwtest();
+}

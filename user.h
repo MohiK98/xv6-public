@@ -28,6 +28,10 @@ int invoked_syscalls(int);
 int sort_syscalls(int);
 int get_count(int, int);
 int log_syscalls(void);
+int ticketlockinit(void);
+int ticketlocktest(void);
+int rwinit(void);
+int rwtest(void);
 
 // ulib.c
 int stat(const char*, struct stat*);

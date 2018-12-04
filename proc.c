@@ -40,6 +40,10 @@ void init_syscall_map() {
   syscall_arr[23] = "sort_syscalls";
   syscall_arr[24] = "get_count";
   syscall_arr[25] = "log_syscalls";
+  syscall_arr[26] = "ticketlockinit";
+  syscall_arr[27] = "ticketlocktest";
+  syscall_arr[28] = "rwinit";
+  syscall_arr[29] = "rwtest";
 }
 
 
@@ -698,3 +702,30 @@ log_syscalls()
   return;
 }
 
+void 
+ticketlockinit(void)
+{
+  cprintf("ticketlockinit\n");
+  return;
+}
+
+void 
+ticketlocktest(void)
+{
+  cprintf("ticketlocktest\n");
+  return;
+}
+
+void
+rwinit(void)
+{
+  cprintf("rwinit\n");
+  return;
+}
+
+void 
+rwtest(void)
+{
+  cprintf("rwtest\n");
+  return;
+}
