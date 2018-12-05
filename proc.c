@@ -710,7 +710,6 @@ ticketlockinit(void)
   cprintf("ticketlockinit\n");
   tl = (struct ticketlock*)kalloc();
   tl->next = 0;
-  tl->locked = 0;
   tl->current = 0;
   return;
 }
@@ -719,7 +718,7 @@ void
 ticketlocktest(void)
 {
   acquireticket(tl);
-  cprintf("%d\n", myproc()->pid);
+  cprintf("critical section\n");
   releaseticket(tl);
   return;
 }
@@ -745,10 +744,12 @@ sleepticket(void* chan)
   if (p == 0)
     panic("sleep");
   acquire(&ptable.lock);
+  popcli();
   p->chan = chan;
   p->state = SLEEPING;
   sched();
   p->chan = 0;
+  pushcli();
   release(&ptable.lock);
 }
 

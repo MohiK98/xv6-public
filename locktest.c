@@ -10,7 +10,7 @@ int main(){
 
 	pid = fork();
 
-	for (int i = 0; i < NCHILD; i++){
+	for (int i = 1; i < NCHILD; i++){
 		if (pid > 0){
 			pid = fork();
 		}
