@@ -6,7 +6,7 @@ struct ticketlock {
 	struct spinlock lk; // for protecting this lock
 };
 
-// void acquireticket(struct ticketlock* tl);
-// void releaseticket(struct ticketlock* tl);
-// void sleepticket(void* chan, struct spinlock* tl);
+void acquireticket(struct ticketlock* tl);
+void releaseticket(struct ticketlock* tl);
+void sleepticket(void* chan, struct spinlock* tl);
 
