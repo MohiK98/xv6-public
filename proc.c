@@ -8,6 +8,7 @@
 #include "spinlock.h"
 #include "date.h"
 #include "ticketlock.h"
+#include "syscall.h"
 
 #define NUMBER 1
 #define STRING 2
@@ -718,8 +719,7 @@ void
 ticketlocktest(void)
 {
   acquireticket(tl);
-  for (int i = 0; i < 10; i++){
-    uptime();
+  for (int i = 0; i < 1000000000 ; i++){
   }
   cprintf("critical section\n");
   releaseticket(tl);
