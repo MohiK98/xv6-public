@@ -737,3 +737,18 @@ rwtest(void)
   cprintf("rwtest\n");
   return;
 }
+
+void
+sleepticket(void* chan)
+{
+  struct proc* p = myproc(); 
+  if (p == 0)
+    panic("sleep");
+  acquire(&ptable.lock);
+  p->chan = chan;
+  p->state = SLEEPING;
+  sched();
+  p->chan = 0;
+  release(&ptable.lock);
+}
+

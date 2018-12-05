@@ -14,48 +14,23 @@
 void
 releaseticket(struct ticketlock* tl)
 {
-	acquire(&tl->lk);
+	pushcli();
 	tl->locked = 0;
 	tl->current++;
 	wakeup(tl);
-	release(&tl->lk);
+	popcli();
 }
-
-// void
-// sleepticket(void* chan, struct spinlock* tl)
-// {
-// 	struct proc *p = myproc();
-// 	if(p == 0)
-// 		panic("sleep");
-// 	if(tl == 0)
-// 		panic("sleep without lk");
-// 	if(tl != &ptable.lock){
-// 		acquire(&ptable.lock);
-// 		release(tl);
-// 	}
-// 	// Go to sleep.
-// 	p->chan = chan;
-// 	p->state = SLEEPING;
-// 	sched();
-// 	// Tidy up.
-// 	p->chan = 0;
-// 	// Reacquire original lock.
-// 	if(tl != &ptable.lock){
-// 		release(&ptable.lock);
-// 		acquire(tl);
-// 	}
-// }
 
 void 
 acquireticket(struct ticketlock* tl)
 {
-	acquire(&tl->lk);
+	pushcli();
 	asm("inc %0": "+r"(tl->next));
 	uint ticket = tl->next;
+
 	while(tl->current != ticket){
-		sleep(tl, &tl->lk);
+		sleepticket(tl);
 	}
 	tl->locked = 1;
-	release(&tl->lk);
-
+	popcli();
 }

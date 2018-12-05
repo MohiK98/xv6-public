@@ -1,5 +1,7 @@
 #include "date.h"
 
+void sleepticket(void* chan);
+
 // Per-CPU state
 struct cpu {
   uchar apicid;                // Local APIC ID
