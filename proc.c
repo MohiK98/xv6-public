@@ -7,6 +7,8 @@
 #include "proc.h"
 #include "spinlock.h"
 #include "date.h"
+#include "ticketlock.h"
+
 #define NUMBER 1
 #define STRING 2
 #define POINTER 3
@@ -56,7 +58,7 @@ struct {
 } ptable;
 
 static struct proc *initproc;
-
+struct ticketlock* tl;
 int nextpid = 1;
 extern void forkret(void);
 extern void trapret(void);
@@ -706,13 +708,19 @@ void
 ticketlockinit(void)
 {
   cprintf("ticketlockinit\n");
+  struct ticketlock* tl = (struct ticketlock*)kalloc();
+  tl->next = 0;
+  tl->locked = 0;
+  tl->current = 0;
   return;
 }
 
 void 
 ticketlocktest(void)
 {
-  cprintf("ticketlocktest\n");
+  acquireticket(tl);
+  cprintf("%d\n", myproc()->pid);
+  releaseticket(tl);
   return;
 }
 
