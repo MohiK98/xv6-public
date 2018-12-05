@@ -130,7 +130,7 @@ void			ticketlockinit(void);
 void 			ticketlocktest(void);
 void 			rwinit(void);
 void			rwtest(void);
-
+int 			uptime(void);
 
 // swtch.S
 void            swtch(struct context**, struct context*);
