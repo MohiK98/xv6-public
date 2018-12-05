@@ -1,6 +1,5 @@
 #include "types.h"
 #include "user.h"
-#include "ticketlock.h"
 
 #define NCHILD 10
 

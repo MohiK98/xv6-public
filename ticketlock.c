@@ -14,7 +14,7 @@ acquireticket(struct ticketlock* tl)
 	acquire(&tl->lk);
 	uint ticket = fetch_and_add(&tl->next, 1);
 	while(tl->current != ticket){
-		sleepticket(tl, &tl->lk)
+		sleepticket(tl, &tl->lk);
 	}
 	tl->locked = 1;
 	release(&tl->lk);
