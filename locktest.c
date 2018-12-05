@@ -22,7 +22,7 @@ int main(){
 		ticketlocktest();
 	}
 	else {
-		for (int i = 0; i <‌ NCHILD; i++)
+		for (int i = 0; i < NCHILD; i++)
 			wait();
 		printf(1, "user program finished\n");
 	}
