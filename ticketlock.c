@@ -9,6 +9,22 @@
 #include "sleeplock.h"
 #include "ticketlock.h"
 
+void 
+acquireticket(struct ticketlock* tl)
+{
+	cprintf("Acquiring lock for process: %d\n", myproc()->pid);
+	pushcli();
+	tl->locked = 1;
+	uint ticket = tl->next;
+
+	cprintf("tl->next: %d\n", tl->next);
+	asm("inc %0": "+r"(tl->next));
+	cprintf("tl->next: %d\n", tl->next);
+	while(tl->current != ticket){
+		sleepticket(tl);
+	}
+	popcli();
+}
 
 
 void
@@ -18,19 +34,5 @@ releaseticket(struct ticketlock* tl)
 	tl->locked = 0;
 	tl->current++;
 	wakeup(tl);
-	popcli();
-}
-
-void 
-acquireticket(struct ticketlock* tl)
-{
-	pushcli();
-	asm("inc %0": "+r"(tl->next));
-	uint ticket = tl->next;
-
-	while(tl->current != ticket){
-		sleepticket(tl);
-	}
-	tl->locked = 1;
 	popcli();
 }

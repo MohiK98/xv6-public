@@ -28,7 +28,7 @@ void init_syscall_map() {
   syscall_arr[9] = "dup";
   syscall_arr[10] = "getpid";
   syscall_arr[11] = "sbrk";
-  syscall_arr[12] = "sleep"; // sleep(void *chan, struct spinlock *lk)
+  syscall_arr[12] = "sleep"; 
   syscall_arr[13] = "uptime";
   syscall_arr[14] = "open";
   syscall_arr[15] = "write";
@@ -708,7 +708,7 @@ void
 ticketlockinit(void)
 {
   cprintf("ticketlockinit\n");
-  struct ticketlock* tl = (struct ticketlock*)kalloc();
+  tl = (struct ticketlock*)kalloc();
   tl->next = 0;
   tl->locked = 0;
   tl->current = 0;
