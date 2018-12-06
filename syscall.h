@@ -29,5 +29,6 @@
 #define SYS_ticketlocktest 28
 #define SYS_rwinit 29
 #define SYS_rwtest 30
+#define SYS_dealloc 31
 
 

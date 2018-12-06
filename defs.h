@@ -131,6 +131,7 @@ void 			ticketlocktest(void);
 void 			rwinit(void);
 void			rwtest(uint);
 int 			uptime(void);
+void 			dealloc(void);
 
 // swtch.S
 void            swtch(struct context**, struct context*);

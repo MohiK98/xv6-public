@@ -159,3 +159,8 @@ void sys_rwtest(void)
   argint(0, &num);
   return rwtest(num);
 }
+
+void sys_dealloc(void)
+{
+  return dealloc();
+}

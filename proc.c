@@ -61,8 +61,8 @@ struct {
 
 static struct proc *initproc;
 
-struct ticketlock* tl;
-struct rwlock* rwl;
+struct ticketlock* tl = 0;
+struct rwlock* rwl = 0;
 
 int nextpid = 1;
 extern void forkret(void);
@@ -716,7 +716,7 @@ ticketlockinit(void)
   tl = (struct ticketlock*)kalloc();
   tl->next = 0;
   tl->current = 0;
-  return;
+  return;(void*)
 }
 
 void 
@@ -801,3 +801,14 @@ sleepticket(void* chan)
   release(&ptable.lock);
 }
 
+void 
+dealloc(void)
+{
+  if (rwl != 0){
+    kfree((void*)rwl); 
+  }
+  if (tl != 0){
+    kfree((void*)tl);
+  }
+  return;
+}

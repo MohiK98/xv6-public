@@ -39,4 +39,4 @@ SYSCALL(ticketlockinit)
 SYSCALL(ticketlocktest)
 SYSCALL(rwinit)
 SYSCALL(rwtest)
-
+SYSCALL(dealloc)

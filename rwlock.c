@@ -28,7 +28,7 @@ void releaseread(struct rwlock* rwl){
 }
 
 void acquirewrite(struct rwlock* rwl){
-	cprintf("ws\n");
+	cprintf("w\n");
 	acquireticket(&rwl->read_lock);
 }
 

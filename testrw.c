@@ -1,7 +1,7 @@
 #include "types.h"
 #include "user.h"
 
-#define NCHILD 2
+#define NCHILD 3
 
 int main(){
 	int pid;
@@ -26,5 +26,6 @@ int main(){
 			wait();
 		printf(1, "user program finished\n");
 	}
+	dealloc();
 	exit();
 }
