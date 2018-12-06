@@ -14,8 +14,8 @@ acquireticket(struct ticketlock* tl)
 {
 	
 	uint ticket = fetch_and_add(&tl->next, 1);
-	cprintf("Acquiring ticket lock for process: %d with ticket: %d\n", myproc()->pid, ticket);
 	pushcli();
+	cprintf("Acquiring ticket lock for process: %d with ticket: %d\n", myproc()->pid, ticket);
 	while(tl->current != ticket){
 		sleepticket(tl);
 	}

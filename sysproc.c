@@ -155,5 +155,7 @@ void sys_rwinit(void)
 
 void sys_rwtest(void)
 {
-  return rwtest();
+  int num;
+  argint(0, &num);
+  return rwtest(num);
 }

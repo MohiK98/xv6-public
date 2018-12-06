@@ -9,6 +9,7 @@
 #include "date.h"
 #include "ticketlock.h"
 #include "syscall.h"
+#include "rwlock.h"
 
 #define NUMBER 1
 #define STRING 2
@@ -59,7 +60,10 @@ struct {
 } ptable;
 
 static struct proc *initproc;
+
 struct ticketlock* tl;
+struct rwlock* rwl;
+
 int nextpid = 1;
 extern void forkret(void);
 extern void trapret(void);
@@ -730,15 +734,56 @@ void
 rwinit(void)
 {
   cprintf("rwinit\n");
+  rwl = (struct rwlock*)kalloc();
+  rwl->num_readers = 0;
+  rwl->entrance_lock.current = 0;
+  rwl->entrance_lock.next = 0;
+  rwl->read_lock.current = 0;
+  rwl->read_lock.next = 0;
   return;
 }
 
-void 
-rwtest(void)
-{
-  cprintf("rwtest\n");
-  return;
+void decimal_to_binary(uint num, int* result, int *index){
+  int bin[500];
+
+  int i = 0, k = 0;
+  while(num > 0){
+    bin[i] = num % 2;
+    num /= 2;
+    i ++;
+  }
+  *index = i;
+  for (int j = i - 1; j >= 0; j--){
+    result[k] = bin[j];
+    k++;
+  }
 }
+
+void 
+rwtest(uint num)
+{
+  int bin[500];
+  int index;
+  decimal_to_binary(num, bin, &index);
+  for (int i = 1; i < index; i++){
+    int pid = myproc()->pid;
+    if (bin[i] == 0){
+      acquireread(rwl);
+      cprintf("reading in loop: %d in process: %d\n", i, pid);
+      releaseread(rwl);
+    }
+    else{
+      acquirewrite(rwl);
+      cprintf("writing in loop: %d in process: %d\n", i, pid);
+      releasewrite(rwl);
+    }
+  }
+
+  return;
+
+}
+
+
 
 void
 sleepticket(void* chan)

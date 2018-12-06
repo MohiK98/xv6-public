@@ -129,7 +129,7 @@ void			log_syscalls(void);
 void			ticketlockinit(void);
 void 			ticketlocktest(void);
 void 			rwinit(void);
-void			rwtest(void);
+void			rwtest(uint);
 int 			uptime(void);
 
 // swtch.S
