@@ -716,7 +716,7 @@ ticketlockinit(void)
   tl = (struct ticketlock*)kalloc();
   tl->next = 0;
   tl->current = 0;
-  return;(void*)
+  return;
 }
 
 void 
