@@ -723,8 +723,7 @@ void
 ticketlocktest(void)
 {
   acquireticket(tl);
-  for (int i = 0; i < 1000000000 ; i++){
-  }
+  for (int i = 0; i < 1000000000 ; i++);
   cprintf("critical section\n");
   releaseticket(tl);
   return;
@@ -792,12 +791,12 @@ sleepticket(void* chan)
   if (p == 0)
     panic("sleep");
   acquire(&ptable.lock);
-  popcli();
   p->chan = chan;
   p->state = SLEEPING;
+  popcli();
   sched();
-  p->chan = 0;
   pushcli();
+  p->chan = 0;
   release(&ptable.lock);
 }
 

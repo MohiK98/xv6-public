@@ -20,7 +20,9 @@ void acquireread(struct rwlock* rwl){
 
 void releaseread(struct rwlock* rwl){
 	acquireticket(&rwl->entrance_lock);
-	uint num_readers = fetch_and_add(&rwl->num_readers, -1);
+	pushcli();
+	uint num_readers = --rwl->num_readers;
+	popcli();
 	if (num_readers == 0){
 		releaseticket(&rwl->read_lock);
 	}
