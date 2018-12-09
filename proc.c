@@ -61,8 +61,8 @@ struct {
 
 static struct proc *initproc;
 
-struct ticketlock* tl = 0;
-struct rwlock* rwl = 0;
+struct ticketlock tl;
+struct rwlock rwl;
 
 int nextpid = 1;
 extern void forkret(void);
@@ -713,19 +713,16 @@ void
 ticketlockinit(void)
 {
   cprintf("ticketlockinit\n");
-  tl = (struct ticketlock*)kalloc();
-  tl->next = 0;
-  tl->current = 0;
+  initticket(&tl);
   return;
 }
 
 void 
 ticketlocktest(void)
 {
-  acquireticket(tl);
-  for (int i = 0; i < 1000000000 ; i++);
+  acquireticket(&tl);
   cprintf("critical section\n");
-  releaseticket(tl);
+  releaseticket(&tl);
   return;
 }
 
@@ -733,12 +730,7 @@ void
 rwinit(void)
 {
   cprintf("rwinit\n");
-  rwl = (struct rwlock*)kalloc();
-  rwl->num_readers = 0;
-  rwl->entrance_lock.current = 0;
-  rwl->entrance_lock.next = 0;
-  rwl->read_lock.current = 0;
-  rwl->read_lock.next = 0;
+  initrwlock(&rwl);
   return;
 }
 
@@ -767,21 +759,22 @@ rwtest(uint num)
   for (int i = 1; i < index; i++){
     int pid = myproc()->pid;
     if (bin[i] == 0){
-      acquireread(rwl);
+      acquireread(&rwl);
       cprintf("reading in loop: %d in process: %d\n", i, pid);
-      releaseread(rwl);
+      releaseread(&rwl);
     }
     else{
-      acquirewrite(rwl);
+      cprintf("\n$$\n");
+      acquirewrite(&rwl);
+      cprintf("\n##\n");
       cprintf("writing in loop: %d in process: %d\n", i, pid);
-      releasewrite(rwl);
+      releasewrite(&rwl);
     }
   }
 
   return;
 
 }
-
 
 
 void
@@ -803,11 +796,5 @@ sleepticket(void* chan)
 void 
 dealloc(void)
 {
-  if (rwl != 0){
-    kfree((void*)rwl); 
-  }
-  if (tl != 0){
-    kfree((void*)tl);
-  }
   return;
 }

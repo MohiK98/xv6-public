@@ -6,6 +6,7 @@ struct ticketlock {
 	uint current, next;
 };
 
+void initticket(struct ticketlock *tl); 
 void acquireticket(struct ticketlock* tl);
 void releaseticket(struct ticketlock* tl);
 

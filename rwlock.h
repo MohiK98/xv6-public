@@ -6,6 +6,7 @@ struct rwlock {
 	struct ticketlock read_lock;
 };	
 
+void initrwlock(struct rwlock *rwl);
 void acquireread(struct rwlock* rwl);
 void releaseread(struct rwlock* rwl);
 void acquirewrite(struct rwlock* rwl);

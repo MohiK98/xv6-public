@@ -26,6 +26,5 @@ int main(){
 			wait();
 		printf(1, "user program finished\n");
 	}
-	dealloc();
 	exit();
 }
