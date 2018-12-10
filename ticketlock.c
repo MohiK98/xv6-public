@@ -20,12 +20,10 @@ void
 acquireticket(struct ticketlock* tl)
 {
 	cprintf("Acquiring ticket lock for process: %d\n", myproc()->pid);
-	pushcli();
 	uint ticket = fetch_and_add(&tl->next, 1);
 	while(tl->current != ticket){
 		sleepticket(tl);
 	}
-	popcli();
 }
 
 
@@ -33,8 +31,6 @@ void
 releaseticket(struct ticketlock* tl)
 {
 	cprintf("Releasing lock for process: %d\n", myproc()->pid);
-	pushcli();
 	fetch_and_add(&tl->current, 1);
 	wakeup(tl);
-	popcli();
 }
