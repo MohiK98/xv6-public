@@ -771,11 +771,8 @@ rwtest(uint num)
       popcli();
     }
     else{
-      cprintf("\n$$\n");
-      // pushcli();
       acquirewrite(&rwl);
-      cprintf("\n##\n");
-      cprintf("+++++++++++++++++++++++writing in loop: %d in process: %d\n", i, pid);
+      cprintf("writing in loop: %d in process: %d\n", i, pid);
       releasewrite(&rwl);
       // popcli();
     }
