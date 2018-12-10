@@ -63,7 +63,7 @@ kfree(char *v)
 
 
   if((uint)v % PGSIZE || v < end || V2P(v) >= PHYSTOP){
-    cprintf("%d %d %d %d %d", (uint)v % PGSIZE , v < end , V2P(v) >= PHYSTOP, (uint) v, V2P(v));
+    cprintf("%d %d %d %d %d\n", (uint)v % PGSIZE , v < end , V2P(v) >= PHYSTOP, (uint) v, V2P(v));
     panic("kfree++++");
   }
   // Fill with junk to catch dangling refs.

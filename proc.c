@@ -756,27 +756,23 @@ void decimal_to_binary(uint num, int* result, int *index){
 void 
 rwtest(uint num)
 {
-  int bin[500];
+  int bin[100];
   int index;
   decimal_to_binary(num, bin, &index);
   for (int i = 1; i < index; i++){
+    pushcli();
     int pid = myproc()->pid;
+    popcli();
     if (bin[i] == 0){
-      // pushcli();
-      fetch_and_add(&rwl.num_readers, 1);
-      // rwl.num_readers += 1;
-      // popcli();
       cprintf("+++++++++++++++++++++++reading in loop: %d in process: %d\n", i, pid);
+      fetch_and_add(&rwl.num_readers, 1);
       acquireread(&rwl);
       releaseread(&rwl);
-      pushcli();
-      rwl.num_readers -= 1;
-      popcli();
     }
     else{
-      cprintf("writing in loop: %d in process: %d\n", i, pid);
       acquirewrite(&rwl);
       releasewrite(&rwl);
+      cprintf("++++++++++++++++++++++++writing in loop: %d in process: %d\n", i, pid);
       // popcli();
     }
   }
@@ -789,11 +785,10 @@ rwtest(uint num)
 void
 sleepticket(void* chan)
 {
+  acquire(&ptable.lock);
   struct proc* p = myproc(); 
   if (p == 0)
     panic("sleep");
-  acquire(&ptable.lock);
-  // pushcli();
   p->chan = chan;
   p->state = SLEEPING;
   popcli();
@@ -801,7 +796,6 @@ sleepticket(void* chan)
   pushcli();
   p->chan = 0;
   release(&ptable.lock);
-  // popcli();
 }
 
 void 

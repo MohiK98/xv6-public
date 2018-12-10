@@ -15,7 +15,7 @@ void initrwlock(struct rwlock *rwl){
 }
 
 void acquireread(struct rwlock* rwl){
-	// cprintf("++++++++++++++++++num_readers is: %d\n", rwl->num_readers);
+	cprintf("++++++++++++++++++num_readers is: %d\n", rwl->num_readers);
 	acquireticket(&rwl->entrance_lock);
 	fetch_and_add(&rwl->num_readers, 1);
 	if (rwl->num_readers == 1){

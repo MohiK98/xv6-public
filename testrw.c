@@ -18,11 +18,11 @@ int main(){
 	if (pid < 0)
 		printf(2, "fork error\n");
 	else if (pid == 0){
+		rwtest(15);
 		printf(1, "child adding to rw\n");
-		rwtest(18);
 	}
 	else {
-		for (int i = 0; i < NCHILD; i++)
+		for (int i = 0; i < NCHILD + 1; i++)
 			wait();
 		printf(1, "user program finished\n");
 	}
