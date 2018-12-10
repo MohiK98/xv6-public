@@ -17,8 +17,8 @@ void initrwlock(struct rwlock *rwl){
 void acquireread(struct rwlock* rwl){
 	cprintf("++++++++++++++++++num_readers is: %d\n", rwl->num_readers);
 	acquireticket(&rwl->entrance_lock);
-	uint num_readers = fetch_and_add(&rwl->num_readers, 1);
-	if (num_readers == 1){
+	fetch_and_add(&rwl->num_readers, 1);
+	if (rwl->num_readers == 1){
 		acquireticket(&rwl->read_lock);
 	}
 	releaseticket(&rwl->entrance_lock);
@@ -26,7 +26,9 @@ void acquireread(struct rwlock* rwl){
 
 void releaseread(struct rwlock* rwl){
 	acquireticket(&rwl->entrance_lock);
+	pushcli();
 	rwl->num_readers--;
+	popcli();
 	if (rwl->num_readers == 0){
 		releaseticket(&rwl->read_lock);
 	}

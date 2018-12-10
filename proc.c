@@ -720,9 +720,11 @@ ticketlockinit(void)
 void 
 ticketlocktest(void)
 {
-  acquireticket(&tl);
-  cprintf("critical section\n");
-  releaseticket(&tl);
+  for(int i = 0; i < 10; i++){
+    acquireticket(&tl);
+    // cprintf("critical section\n");
+    releaseticket(&tl); 
+  }
   return;
 }
 
@@ -757,16 +759,24 @@ rwtest(uint num)
   int index;
   decimal_to_binary(num, bin, &index);
   for (int i = 1; i < index; i++){
-    // int pid = myproc()->pid;
+    int pid = myproc()->pid;
     if (bin[i] == 0){
+      // pushcli();
+      fetch_and_add(&rwl.num_readers, 1);
+      // rwl.num_readers += 1;
+      // popcli();
       acquireread(&rwl);
-      // cprintf("+++++++++++++++++++++++reading in loop: %d in process: %d\n", i, pid);
+      cprintf("+++++++++++++++++++++++reading in loop: %d in process: %d\n", i, pid);
       releaseread(&rwl);
+      pushcli();
+      rwl.num_readers -= 1;
+      popcli();
     }
     else{
       acquirewrite(&rwl);
-      // cprintf("writing in loop: %d in process: %d\n", i, pid);
+      cprintf("writing in loop: %d in process: %d\n", i, pid);
       releasewrite(&rwl);
+      // popcli();
     }
   }
 
@@ -782,6 +792,7 @@ sleepticket(void* chan)
   if (p == 0)
     panic("sleep");
   acquire(&ptable.lock);
+  // pushcli();
   p->chan = chan;
   p->state = SLEEPING;
   popcli();
@@ -789,6 +800,7 @@ sleepticket(void* chan)
   pushcli();
   p->chan = 0;
   release(&ptable.lock);
+  // popcli();
 }
 
 void 
