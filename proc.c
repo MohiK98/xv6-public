@@ -764,9 +764,7 @@ rwtest(uint num)
       releaseread(&rwl);
     }
     else{
-      cprintf("\n$$\n");
       acquirewrite(&rwl);
-      cprintf("\n##\n");
       cprintf("writing in loop: %d in process: %d\n", i, pid);
       releasewrite(&rwl);
     }
