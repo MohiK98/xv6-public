@@ -759,16 +759,25 @@ rwtest(uint num)
   for (int i = 1; i < index; i++){
     int pid = myproc()->pid;
     if (bin[i] == 0){
+      // pushcli();
+      fetch_and_add(&rwl.num_readers, 1);
+      // rwl.num_readers += 1;
+      // popcli();
       acquireread(&rwl);
-      cprintf("reading in loop: %d in process: %d\n", i, pid);
+      cprintf("+++++++++++++++++++++++reading in loop: %d in process: %d\n", i, pid);
       releaseread(&rwl);
+      pushcli();
+      rwl.num_readers -= 1;
+      popcli();
     }
     else{
       cprintf("\n$$\n");
+      // pushcli();
       acquirewrite(&rwl);
       cprintf("\n##\n");
-      cprintf("writing in loop: %d in process: %d\n", i, pid);
+      cprintf("+++++++++++++++++++++++writing in loop: %d in process: %d\n", i, pid);
       releasewrite(&rwl);
+      // popcli();
     }
   }
 

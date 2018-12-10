@@ -16,23 +16,32 @@ void initrwlock(struct rwlock *rwl){
 
 void acquireread(struct rwlock* rwl){
 	// cprintf("r\n");
+	cprintf("++++++++++++++++++num_readers is: %d\n", rwl->num_readers);
 	acquireticket(&rwl->entrance_lock);
-	uint num_readers = fetch_and_add(&rwl->num_readers, 1);
-	if (num_readers == 1){
+	// pushcli();
+	// rwl->num_readers += 1;
+	// uint num_readers = fetch_and_add(&rwl->num_readers, 1);
+	if (rwl->num_readers == 1){
+		// popcli();	
+		// cprintf("process with pid: %d in num_readers: ", myproc()->pid);
 		acquireticket(&rwl->read_lock);
+		// pushcli();
 	}
+	// popcli();
 	releaseticket(&rwl->entrance_lock);
 }
 
 void releaseread(struct rwlock* rwl){
 	acquireticket(&rwl->entrance_lock);
-	pushcli();
-	rwl->num_readers--;
+	// pushcli();
+	// rwl->num_readers--;
 	uint num_readers = rwl->num_readers;
-	popcli();
 	if (num_readers == 0){
+		// popcli();
 		releaseticket(&rwl->read_lock);
+		// pushcli();
 	}
+	// popcli();
 	releaseticket(&rwl->entrance_lock);
 }
 
