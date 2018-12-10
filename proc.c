@@ -720,11 +720,12 @@ ticketlockinit(void)
 void 
 ticketlocktest(void)
 {
-  for(int i = 0; i < 10; i++){
+  // for(int i = 0; i < 10; i++){
     acquireticket(&tl);
     // cprintf("critical section\n");
     releaseticket(&tl); 
-  }
+  // }
+  
   return;
 }
 
@@ -765,16 +766,16 @@ rwtest(uint num)
       fetch_and_add(&rwl.num_readers, 1);
       // rwl.num_readers += 1;
       // popcli();
-      acquireread(&rwl);
       cprintf("+++++++++++++++++++++++reading in loop: %d in process: %d\n", i, pid);
+      acquireread(&rwl);
       releaseread(&rwl);
       pushcli();
       rwl.num_readers -= 1;
       popcli();
     }
     else{
-      acquirewrite(&rwl);
       cprintf("writing in loop: %d in process: %d\n", i, pid);
+      acquirewrite(&rwl);
       releasewrite(&rwl);
       // popcli();
     }

@@ -19,7 +19,7 @@ int main(){
 		printf(2, "fork error\n");
 	else if (pid == 0){
 		printf(1, "child adding to rw\n");
-		rwtest(17);
+		rwtest(18);
 	}
 	else {
 		for (int i = 0; i < NCHILD; i++)
