@@ -17,14 +17,16 @@ int main(){
         if (pid != 0){
             pid = fork();
         } else {
+            pti();
             if (i < 6) {
-                setProcType(getpid(), PRIORITY);
-                for (int i = 0; i < 1000000000; ++i);
-
+                setProcType(getpid(), LOTTERY);
+                setLotteryTicketRange(getpid(), i*4);
             } else if (i < 11) {
                 setProcType(getpid(), FCFS);
+                for(int i = 0; i < 1000; i++);
             }else {
-                setProcType(getpid(), LOTTERY);
+                setProcType(getpid(), PRIORITY);
+                for(int i = 0; i < 1000; i++);
             }
         }
     }

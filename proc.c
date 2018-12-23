@@ -492,7 +492,6 @@ scheduler(void)
 
     // FCFS scheduling ------> looking thro creation time
     if(flag == 0 && hasRunnable(FCFSQeue, FCFSCounter)){
-      cprintf("fcfs\n");
       for(counter = 0; counter < FCFSCounter; counter++){
         if (FCFSQeue[counter]->state == RUNNABLE){
           p = FCFSQeue[counter];
