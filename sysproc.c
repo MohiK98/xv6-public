@@ -164,3 +164,8 @@ void sys_dealloc(void)
 {
   return dealloc();
 }
+
+void sys_ps(void)
+{
+  return ps();
+}

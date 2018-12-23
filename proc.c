@@ -138,6 +138,10 @@ allocproc(void)
 found:
   p->state = EMBRYO;
   p->pid = nextpid++;
+  p->queue = LOTTERY;
+  p->ticket = rand() % 50;
+  p->priority = 0;
+
 
   release(&ptable.lock);
 
@@ -365,6 +369,37 @@ wait(void)
   }
 }
 
+uint sum_ticket(void) {
+  uint sum = 0;
+  for(struct proc *p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+    if (p->state != RUNNABLE || p->queue != LOTTERY)
+      continue;
+    sum += p->ticket;
+  }
+  // panic ("zero sum");
+  return sum;
+}
+
+int lottery_has_runnable(void) {
+  for(struct proc *p = ptable.proc; p < &ptable.proc[NPROC]; p++)
+    if (p->state == RUNNABLE && p->queue == LOTTERY)
+      return 1;
+  return 0;
+}
+
+struct proc* find_lucky_process(int ticket){
+  for(struct proc *p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+    if (p->state != RUNNABLE || p->queue != LOTTERY)
+      continue;
+    if (p->ticket > ticket){
+      return p;
+    } else {
+      ticket -= p->ticket;
+    }
+  }
+  return 0;
+}
+
 //PAGEBREAK: 42
 // Per-CPU process scheduler.
 // Each CPU calls scheduler() after setting itself up.
@@ -381,29 +416,43 @@ scheduler(void)
   c->proc = 0;
   
   for(;;){
-    // Enable interrupts on this processor.
     sti();
-
-    // Loop over process table looking for process to run.
     acquire(&ptable.lock);
-    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-      if(p->state != RUNNABLE)
+    if (lottery_has_runnable()) {
+      uint ticket_sum = sum_ticket();
+      if (ticket_sum == 0) {
         continue;
-
-      // Switch to chosen process.  It is the process's job
-      // to release ptable.lock and then reacquire it
-      // before jumping back to us.
+      }
+      uint lottery_ticket = rand() % ticket_sum;
+      p = find_lucky_process(lottery_ticket);
+      if (p == 0)
+        continue;
       c->proc = p;
       switchuvm(p);
       p->state = RUNNING;
-
       swtch(&(c->scheduler), p->context);
       switchkvm();
-
-      // Process is done running for now.
-      // It should have changed its p->state before coming back.
       c->proc = 0;
     }
+    
+    // for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+    //   if(p->state != RUNNABLE)
+    //     continue;
+
+    //   // Switch to chosen process.  It is the process's job
+    //   // to release ptable.lock and then reacquire it
+    //   // before jumping back to us.
+    //   c->proc = p;
+    //   switchuvm(p);
+    //   p->state = RUNNING;
+
+    //   swtch(&(c->scheduler), p->context);
+    //   switchkvm();
+
+    //   // Process is done running for now.
+    //   // It should have changed its p->state before coming back.
+    //   c->proc = 0;
+    // }
     release(&ptable.lock);
 
   }
@@ -801,5 +850,16 @@ sleepticket(void* chan)
 void 
 dealloc(void)
 {
+  return;
+}
+
+void 
+ps(void)
+{
+  cprintf("name    pid    state    priority    create_time\n--------------------------------------------------\n");
+  for (int i = 0; i < nextpid-1; i++){
+    struct proc p = ptable.proc[i];  
+    cprintf("%s         %d    %s    %d\n", p.name, p.pid, p.state, p.priority);
+  }
   return;
 }
