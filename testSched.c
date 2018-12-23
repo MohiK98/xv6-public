@@ -12,12 +12,15 @@ int main(){
     if (pid == 0){
         setProcType(getpid(), FCFS);
     }
+    setProcType(2, FCFS);
     for (int i = 1; i < NCHILD; i++){
         if (pid != 0){
             pid = fork();
         } else {
             if (i < 6) {
                 setProcType(getpid(), PRIORITY);
+                for (int i = 0; i < 1000000000; ++i);
+
             } else if (i < 11) {
                 setProcType(getpid(), FCFS);
             }else {
