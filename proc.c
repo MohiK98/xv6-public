@@ -150,7 +150,7 @@ found:
   p->priority = 10; // it is between 0 to 15 
   p->creation_time = createTime++;
   p->type = LOTTERY;
-  p->ticketMount = 0;
+  p->ticket = 0;
   release(&ptable.lock);
 
   // Allocate kernel stack.
@@ -377,6 +377,54 @@ wait(void)
   }
 }
 
+int hasRunnable(struct proc* q[], int counter) {
+  for (int i = 0; i < counter; i++){
+    if (q[i]->state == RUNNABLE || q[i]->state == RUNNING)
+      return 1;
+  }
+  return 0;
+}
+
+int sumTickets(struct proc* q[], int counter){
+  int sum = 0;
+  for (int i = 0; i < counter; i++){
+    if (q[i]->state == RUNNABLE)
+      sum += q[i]->ticket;
+    else if (q[i]->state == RUNNING)
+      sum += q[i]->ticket;
+  }
+  return sum;
+}
+
+// uint rand (void)
+// {
+//    static uint z1 = 12345, z2 = 12345, z3 = 12345, z4 = 12345;
+//    uint b;
+//    b  = ((z1 << 6) ^ z1) >> 13;
+//    z1 = ((z1 & 4294967294U) << 18) ^ b;
+//    b  = ((z2 << 2) ^ z2) >> 27; 
+//    z2 = ((z2 & 4294967288U) << 2) ^ b;
+//    b  = ((z3 << 13) ^ z3) >> 21;
+//    z3 = ((z3 & 4294967280U) << 7) ^ b;
+//    b  = ((z4 << 3) ^ z4) >> 12;
+//    z4 = ((z4 & 4294967168U) << 13) ^ b;
+//    return (z1 ^ z2 ^ z3 ^ z4);
+// }
+
+int findLuckyProcess(struct proc* q[], int counter, int ticket) {
+  for (int i = 0; i < counter; i++){
+    if (q[i]->state == RUNNABLE || q[i]->state == RUNNING){
+      if (q[i]->ticket > ticket){
+        ticket -= q[i]->ticket;
+      }else {
+        return i;
+      }
+    }
+  }
+  return -1;
+}
+
+
 //PAGEBREAK: 42
 // Per-CPU process scheduler.
 // Each CPU calls scheduler() after setting itself up.
@@ -389,21 +437,35 @@ void
 scheduler(void)
 {
   // int counter = 0;
-  // int flag = 0;
+  int flag = 0;
   struct proc *p;
   struct cpu *c = mycpu();
   c->proc = 0;
   
   for(;;){
-    // flag = 0;
+    flag = 0;
     // Enable interrupts on this processor.
     sti();
-
-    // Loop over process table looking for process to run.
     acquire(&ptable.lock);
+    // Loop over process table looking for process to run.
+    if (hasRunnable(lotteryQeue, lotteryCounter)){
+      int ticketRange = sumTickets(lotteryQeue, lotteryCounter);
+      if(ticketRange != 0){
+        flag = 1;
+        int chosenTicket = rand() % ticketRange;
+        int chosenProcess = findLuckyProcess(lotteryQeue, lotteryCounter, chosenTicket);
+        p = &ptable.proc[chosenProcess];
+        c->proc = p;
+        switchuvm(p);
+        p->state = RUNNING;
+        swtch(&(c->scheduler), p->context);
+        switchkvm();
+        c->proc = 0;
+        release(&ptable.lock);
+      }
+      
+    }
     
-    // lottery scheduling ----> make random number
-
 
     // FCFS scheduling ------> looking thro creation time
     // for(counter = 0; counter < FCFSCounter; counter++){
@@ -422,8 +484,8 @@ scheduler(void)
     //   }
     // }
 
-
-    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+    if (flag == 0){
+      for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
       if(p->state != RUNNABLE)
         continue;
 
@@ -440,8 +502,10 @@ scheduler(void)
       // Process is done running for now.
       // It should have changed its p->state before coming back.
       c->proc = 0;
+      }
+      release(&ptable.lock);
     }
-    release(&ptable.lock);
+    
 
   }
 }
@@ -902,6 +966,7 @@ setProcType(int pid, int procType) // fork by type
   release(&ptable.lock);
 }
 
+
 void
 setLotteryTicketRange(int pid, int amount)
 {
@@ -909,7 +974,7 @@ setLotteryTicketRange(int pid, int amount)
   acquire(&ptable.lock);
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
     if(p->pid == pid){
-      p->ticketMount = amount;
+      p->ticket = (uint)amount;
       break;
     }
   }

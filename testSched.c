@@ -25,7 +25,7 @@ int main(){
         if (counter < 6){
             setProcType(getpid(), PRIORITY);
         }
-        if (counter < 11){
+        else if (counter < 11){
             setProcType(getpid(), FCFS);
         } 
         else{
