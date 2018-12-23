@@ -149,7 +149,7 @@ found:
   p->pid = nextpid++;
   p->priority = 10; // it is between 0 to 15 
   p->creation_time = createTime++;
-  p->type = LOTTERY;
+  p->type = PRIORITY;
   p->ticket = 0;
   release(&ptable.lock);
 
@@ -455,13 +455,18 @@ scheduler(void)
         int chosenTicket = rand() % ticketRange;
         int chosenProcess = findLuckyProcess(lotteryQeue, lotteryCounter, chosenTicket);
         p = &ptable.proc[chosenProcess];
+        if (p->kstack != 0){
         c->proc = p;
         switchuvm(p);
         p->state = RUNNING;
         swtch(&(c->scheduler), p->context);
         switchkvm();
         c->proc = 0;
-        release(&ptable.lock);
+        release(&ptable.lock); 
+        }
+        else{
+          flag = 0;
+        }        
       }
       
     }
@@ -949,7 +954,7 @@ void
 setProcType(int pid, int procType) // fork by type
 {
   struct proc *p;
-  acquire(&ptable.lock);
+  // acquire(&ptable.lock);
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
     if(p->pid == pid && procType >= 0 && procType <= 2){
       p->type = procType;
@@ -963,7 +968,7 @@ setProcType(int pid, int procType) // fork by type
       break;
     }
   }
-  release(&ptable.lock);
+  // release(&ptable.lock);
 }
 
 
@@ -971,12 +976,12 @@ void
 setLotteryTicketRange(int pid, int amount)
 {
   struct proc *p;
-  acquire(&ptable.lock);
+  // acquire(&ptable.lock);
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
     if(p->pid == pid){
       p->ticket = (uint)amount;
       break;
     }
   }
-  release(&ptable.lock);  
+  // release(&ptable.lock);  
 }  
