@@ -376,7 +376,6 @@ uint sum_ticket(void) {
       continue;
     sum += p->ticket;
   }
-  // panic ("zero sum");
   return sum;
 }
 
@@ -421,6 +420,7 @@ scheduler(void)
     if (lottery_has_runnable()) {
       uint ticket_sum = sum_ticket();
       if (ticket_sum == 0) {
+        ps();
         continue;
       }
       uint lottery_ticket = rand() % ticket_sum;
@@ -859,7 +859,18 @@ ps(void)
   cprintf("name    pid    state    priority    create_time\n--------------------------------------------------\n");
   for (int i = 0; i < nextpid-1; i++){
     struct proc p = ptable.proc[i];  
-    cprintf("%s         %d    %s    %d\n", p.name, p.pid, p.state, p.priority);
+    if (p.state == RUNNING)
+      cprintf("%s         %d    RUNNING    %d\n", p.name, p.pid, p.priority);
+    else if (p.state == RUNNABLE)
+      cprintf("%s         %d    RUNNABLE    %d\n", p.name, p.pid, p.priority);
+    else if (p.state == ZOMBIE)
+      cprintf("%s         %d    ZOMBIE    %d\n", p.name, p.pid, p.priority);
+    else if (p.state == SLEEPING)
+      cprintf("%s         %d    SLEEPING    %d\n", p.name, p.pid, p.priority);
+    else if (p.state == EMBRYO)
+      cprintf("%s         %d    EMBRYO    %d\n", p.name, p.pid, p.priority);
+    else if (p.state == UNUSED)
+      cprintf("%s         %d    UNUSED    %d\n", p.name, p.pid, p.priority);
   }
   return;
 }
