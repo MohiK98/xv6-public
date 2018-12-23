@@ -34,13 +34,12 @@ int main(){
         }
     }
 	else {
-        pti();
-    	for (int i = 0; i < NCHILD; i++){
-			pti();
+        setProcType(getpid(), PRIORITY);
+    	for (int i = 0; i < NCHILD + 1; i++){
+            pti();
             wait();
         }
 		printf(1, "user program finished\n");
-        pti();
     }
 	exit();
 }

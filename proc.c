@@ -108,7 +108,7 @@ mycpu(void)
     if (cpus[i].apicid == apicid)
       return &cpus[i];
   }
-  panic("unknown apicid\n");
+  panic("unknown apicid+++++++++++++++++++++++++\n");
 }
 
 // Disable interrupts so that we are not rescheduled
@@ -456,13 +456,13 @@ scheduler(void)
         int chosenProcess = findLuckyProcess(lotteryQeue, lotteryCounter, chosenTicket);
         p = &ptable.proc[chosenProcess];
         if (p->kstack != 0){
-        c->proc = p;
-        switchuvm(p);
-        p->state = RUNNING;
-        swtch(&(c->scheduler), p->context);
-        switchkvm();
-        c->proc = 0;
-        release(&ptable.lock); 
+          c->proc = p;
+          switchuvm(p);
+          p->state = RUNNING;
+          swtch(&(c->scheduler), p->context);
+          switchkvm();
+          c->proc = 0;
+          release(&ptable.lock); 
         }
         else{
           flag = 0;
@@ -473,21 +473,26 @@ scheduler(void)
     
 
     // FCFS scheduling ------> looking thro creation time
-    // for(counter = 0; counter < FCFSCounter; counter++){
-    //   if(ptable.proc[FCFSQeue[counter]]->state == RUNNABLE){
-    //     p = ptable.proc[FCFSQeue[counter]];
-    //     c->proc = p;
-    //     switchuvm(p);
-    //     p->state = RUNNING;
+    if(flag == 0 && hasRunnable(FCFSQeue, FCFSCounter)){
+      for(p = FCFSQeue; p < &FCFSQeue[FCFSCounter]; p++){
+        if (p->state == RUNNABLE){
+          flag = 1;
+          c->proc = p;
+          switchuvm(p);
+          p->state = RUNNING;
 
-    //     swtch(&(c->scheduler), p->context);
-    //     switchkvm();
+          swtch(&(c->scheduler), p->context);
+          switchkvm();
 
-    //     // Process is done running for now.
-    //     // It should have changed its p->state before coming back.
-    //     c->proc = 0;
-    //   }
-    // }
+          // Process is done running for now.
+          // It should have changed its p->state before coming back.
+          c->proc = 0;
+          }
+          release(&ptable.lock);
+        }
+      }
+    }
+
 
     if (flag == 0){
       for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
@@ -918,17 +923,17 @@ pti(void) // program table info
   
   sti();
   acquire(&ptable.lock);
-  cprintf("name \t pid \t state \t priority \t createTime \n");
+  cprintf("name \t pid \t state \t priority \t createTime \t type\n");
   cprintf("----------------------------------------------------------------\n");
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
     if(p->state == SLEEPING)
-      cprintf("%s \t %d \t SLEEPING \t %d \t %d \n", p->name, p->pid, p->priority, p->creation_time);
+      cprintf(" \t %d \t SLEEPING \t %d \t %d \t %d \n", p->pid, p->priority, p->creation_time, p->type);
 
     else if (p->state == RUNNING)
-      cprintf("%s \t %d \t RUNNING \t %d \t %d \n", p->name, p->pid, p->priority, p->creation_time);
+      cprintf(" \t %d \t RUNNING \t %d \t %d \t %d \n",  p->pid, p->priority, p->creation_time, p->type);
 
     else if(p->state == RUNNABLE)
-      cprintf("%s \t %d \t RUNNABLE \t %d \t %d \n", p->name, p->pid, p->priority, p->creation_time);
+      cprintf(" \t %d \t RUNNABLE \t %d \t %d \t %d \n", p->pid, p->priority, p->creation_time, p->type);
   }
 
   release(&ptable.lock);
