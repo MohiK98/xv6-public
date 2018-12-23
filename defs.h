@@ -132,6 +132,10 @@ void 			rwinit(void);
 void			rwtest(uint);
 int 			uptime(void);
 void 			dealloc(void);
+int             pti(void);
+int             chpr(int pid, int newPriority);    
+void            setLotteryTicketRange(int pid, int amount); 
+void            setProcType(int pid, int procType);
 
 // swtch.S
 void            swtch(struct context**, struct context*);

@@ -118,6 +118,10 @@ extern int sys_ticketlocktest(void);
 extern int sys_rwinit(void);
 extern int sys_rwtest(void);
 extern int sys_dealloc(void);
+extern int sys_pti(void);
+extern int sys_chpr(void);
+extern int sys_setProcType(void);
+extern int sys_setLotteryTicketRange(void);
 
 static int (*syscalls[])(void) = {
 [SYS_fork]    sys_fork,
@@ -151,6 +155,10 @@ static int (*syscalls[])(void) = {
 [SYS_rwinit] sys_rwinit ,
 [SYS_rwtest] sys_rwtest ,
 [SYS_dealloc] sys_dealloc,
+[SYS_pti] sys_pti,
+[SYS_chpr] sys_chpr,
+[SYS_setProcType] sys_setProcType,
+[SYS_setLotteryTicketRange] sys_setLotteryTicketRange,
 };
 
 

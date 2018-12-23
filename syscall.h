@@ -30,5 +30,9 @@
 #define SYS_rwinit 29
 #define SYS_rwtest 30
 #define SYS_dealloc 31
+#define SYS_pti 32
+#define SYS_chpr 33
+#define SYS_setProcType 34
+#define SYS_setLotteryTicketRange 35
 
 

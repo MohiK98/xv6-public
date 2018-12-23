@@ -54,6 +54,14 @@ void init_syscall_map() {
 struct process_info process_details[128];
 int process_details_counter = 0;
 
+// template testing for three qeue of schedule PRIORITY && LOTTERY && FCFS
+struct proc* lotteryQeue[NPROC];
+int lotteryCounter = 0;
+struct proc* FCFSQeue[NPROC];
+int FCFSCounter = 0;
+struct proc* priorityQeue[NPROC];
+int priorityCounter = 0;
+
 struct {
   struct spinlock lock;
   struct proc proc[NPROC];
@@ -64,6 +72,7 @@ static struct proc *initproc;
 struct ticketlock tl;
 struct rwlock rwl;
 
+int createTime = 1;
 int nextpid = 1;
 extern void forkret(void);
 extern void trapret(void);
@@ -138,7 +147,10 @@ allocproc(void)
 found:
   p->state = EMBRYO;
   p->pid = nextpid++;
-
+  p->priority = 10; // it is between 0 to 15 
+  p->creation_time = createTime++;
+  p->type = LOTTERY;
+  p->ticketMount = 0;
   release(&ptable.lock);
 
   // Allocate kernel stack.
@@ -376,16 +388,41 @@ wait(void)
 void
 scheduler(void)
 {
+  // int counter = 0;
+  // int flag = 0;
   struct proc *p;
   struct cpu *c = mycpu();
   c->proc = 0;
   
   for(;;){
+    // flag = 0;
     // Enable interrupts on this processor.
     sti();
 
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
+    
+    // lottery scheduling ----> make random number
+
+
+    // FCFS scheduling ------> looking thro creation time
+    // for(counter = 0; counter < FCFSCounter; counter++){
+    //   if(ptable.proc[FCFSQeue[counter]]->state == RUNNABLE){
+    //     p = ptable.proc[FCFSQeue[counter]];
+    //     c->proc = p;
+    //     switchuvm(p);
+    //     p->state = RUNNING;
+
+    //     swtch(&(c->scheduler), p->context);
+    //     switchkvm();
+
+    //     // Process is done running for now.
+    //     // It should have changed its p->state before coming back.
+    //     c->proc = 0;
+    //   }
+    // }
+
+
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
       if(p->state != RUNNABLE)
         continue;
@@ -803,3 +840,78 @@ dealloc(void)
 {
   return;
 }
+
+
+int
+pti(void) // program table info
+{
+  struct proc *p;
+  
+  sti();
+  acquire(&ptable.lock);
+  cprintf("name \t pid \t state \t priority \t createTime \n");
+  cprintf("----------------------------------------------------------------\n");
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+    if(p->state == SLEEPING)
+      cprintf("%s \t %d \t SLEEPING \t %d \t %d \n", p->name, p->pid, p->priority, p->creation_time);
+
+    else if (p->state == RUNNING)
+      cprintf("%s \t %d \t RUNNING \t %d \t %d \n", p->name, p->pid, p->priority, p->creation_time);
+
+    else if(p->state == RUNNABLE)
+      cprintf("%s \t %d \t RUNNABLE \t %d \t %d \n", p->name, p->pid, p->priority, p->creation_time);
+  }
+
+  release(&ptable.lock);
+  return 30;
+}
+
+int
+chpr(int pid, int new_priority) // change program priority
+{
+  struct proc *p;
+  acquire(&ptable.lock);
+  for(p = ptable.proc; p < & ptable.proc[NPROC]; p++){
+    if(p->pid == pid){
+      p->priority = new_priority;
+      break;
+    }
+  }
+  release(&ptable.lock);
+  return pid;
+}
+
+void 
+setProcType(int pid, int procType) // fork by type
+{
+  struct proc *p;
+  acquire(&ptable.lock);
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+    if(p->pid == pid && procType >= 0 && procType <= 2){
+      p->type = procType;
+
+      if (procType == LOTTERY)
+        lotteryQeue[lotteryCounter++] = p;
+      else if(procType == FCFS)    
+        FCFSQeue[FCFSCounter++] = p;
+      else 
+        priorityQeue[priorityCounter++] = p;
+      break;
+    }
+  }
+  release(&ptable.lock);
+}
+
+void
+setLotteryTicketRange(int pid, int amount)
+{
+  struct proc *p;
+  acquire(&ptable.lock);
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+    if(p->pid == pid){
+      p->ticketMount = amount;
+      break;
+    }
+  }
+  release(&ptable.lock);  
+}  
