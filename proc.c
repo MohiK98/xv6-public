@@ -436,7 +436,7 @@ int findLuckyProcess(struct proc* q[], int counter, int ticket) {
 void
 scheduler(void)
 {
-  // int counter = 0;
+  int counter = 0;
   int flag = 0;
   struct proc *p;
   struct cpu *c = mycpu();
@@ -474,8 +474,10 @@ scheduler(void)
 
     // FCFS scheduling ------> looking thro creation time
     if(flag == 0 && hasRunnable(FCFSQeue, FCFSCounter)){
-      for(p = FCFSQeue; p < &FCFSQeue[FCFSCounter]; p++){
-        if (p->state == RUNNABLE){
+      cprintf("siiiiiiiiiiiiiiiik \n");
+      for(counter = 0; counter < FCFSCounter; counter++){
+        if (FCFSQeue[counter]->state == RUNNABLE){
+          p = FCFSQeue[counter];
           flag = 1;
           c->proc = p;
           switchuvm(p);
@@ -487,11 +489,11 @@ scheduler(void)
           // Process is done running for now.
           // It should have changed its p->state before coming back.
           c->proc = 0;
-          }
           release(&ptable.lock);
+          }
         }
       }
-    }
+    
 
 
     if (flag == 0){
