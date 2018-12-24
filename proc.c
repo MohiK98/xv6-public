@@ -150,7 +150,7 @@ found:
   p->priority = 10; // it is between 0 to 15 
   p->creation_time = createTime++;
   p->type = PRIORITY;
-  p->ticket = 0;
+  p->ticket = 1;
   release(&ptable.lock);
 
   // Allocate kernel stack.
@@ -278,6 +278,8 @@ fork(void)
   np->state = RUNNABLE;
 
   release(&ptable.lock);
+
+  cprintf("name for process with pid: %d is %s \n", np->pid, np->name);
 
   // storing new prcoess info in process_info_array
   process_details[process_details_counter].pid = pid;
@@ -449,27 +451,23 @@ scheduler(void)
   struct cpu *c = mycpu();
   c->proc = 0;
   
-  acquire(&ptable.lock);
-  cprintf("0: %s\n", ptable.proc[0].name);
-  setProcType(0, LOTTERY);
-  setLotteryTicketRange(0, 200);
-  release(&ptable.lock);
-  int t = 0;
+  // acquire(&ptable.lock);
+  // cprintf("0: %s\n", ptable.proc[0].name);
+  // setProcType(0, LOTTERY);
+  // setLotteryTicketRange(0, 200);
+  // release(&ptable.lock);
+  // int t = 0;
 
   for(;;){
 
     flag = 0;
     // Enable interrupts on this processor.
     sti();
-    // cprintf("before\n");
     acquire(&ptable.lock);
-    // cprintf("after\n");
-    if (!t++){
-      pti();
-    }
+
     // cprintf("lot: %d\n", hasRunnable(lotteryQeue, lotteryCounter));
+
     if (hasRunnable(lotteryQeue, lotteryCounter)){
-      cprintf("lot\n");
       int ticketRange = sumTickets(lotteryQeue, lotteryCounter);
       // cprintf("sum: %d", ticketRange);
       if(ticketRange != 0){
@@ -491,7 +489,7 @@ scheduler(void)
     
 
     // FCFS scheduling ------> looking thro creation time
-    if(flag == 0 && hasRunnable(FCFSQeue, FCFSCounter)){
+    else if(flag == 0 && hasRunnable(FCFSQeue, FCFSCounter)){
       for(counter = 0; counter < FCFSCounter; counter++){
         if (FCFSQeue[counter]->state == RUNNABLE){
           p = FCFSQeue[counter];
@@ -509,7 +507,7 @@ scheduler(void)
     }
     
 
-    if (flag == 0 && hasRunnable(priorityQeue, priorityCounter)){
+    else if (flag == 0 && hasRunnable(priorityQeue, priorityCounter)){
       cprintf("pr\n");
       int highestPriorityIndex = findHighestPriority(priorityQeue, priorityCounter);
       if (highestPriorityIndex != -1) {
@@ -523,23 +521,24 @@ scheduler(void)
       }
     }
 
-    // if (flag == 0){
-    //   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-    //     if(p->state != RUNNABLE)
-    //       continue;
-    //     // Switch to chosen process.  It is the process's job
-    //     // to release ptable.lock and then reacquire it
-    //     // before jumping back to us.
-    //     c->proc = p;
-    //     switchuvm(p);
-    //     p->state = RUNNING;
-    //     swtch(&(c->scheduler), p->context);
-    //     switchkvm();
-    //     // Process is done running for now.
-    //     // It should have changed its p->state before coming back.
-    //     c->proc = 0;
-    //   }
-    // }
+    else if (flag == 0){
+      // cprintf("boy im here \n");
+      for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+        if(p->state != RUNNABLE)
+          continue;
+        // Switch to chosen process.  It is the process's job
+        // to release ptable.lock and then reacquire it
+        // before jumping back to us.
+        c->proc = p;
+        switchuvm(p);
+        p->state = RUNNING;
+        swtch(&(c->scheduler), p->context);
+        switchkvm();
+        // Process is done running for now.
+        // It should have changed its p->state before coming back.
+        c->proc = 0;
+      }
+    }
 
     release(&ptable.lock);
   } // end of infinite loop scope
@@ -953,13 +952,13 @@ pti(void) // program table info
   cprintf("----------------------------------------------------------------\n");
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
     if(p->state == SLEEPING)
-      cprintf(" \t %d \t SLEEPING \t %d \t %d \t type: %d \n", p->pid, p->priority, p->creation_time, p->type);
+      cprintf("%s \t %d \t SLEEPING \t %d \t %d \t type: %d \n",p->name ,p->pid, p->priority, p->creation_time, p->type);
 
     else if (p->state == RUNNING)
-      cprintf(" \t %d \t RUNNING \t %d \t %d \t type: %d \n",  p->pid, p->priority, p->creation_time, p->type);
+      cprintf("%s \t %d \t RUNNING \t %d \t %d \t type: %d \n",p->name  , p->pid, p->priority, p->creation_time, p->type);
 
     else if(p->state == RUNNABLE)
-      cprintf(" \t %d \t RUNNABLE \t %d \t %d \t type: %d \n", p->pid, p->priority, p->creation_time, p->type);
+      cprintf("%s \t %d \t RUNNABLE \t %d \t %d \t type: %d \n",p->name ,p->pid, p->priority, p->creation_time, p->type);
   }
   cprintf("\n");
 
