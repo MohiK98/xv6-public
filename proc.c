@@ -428,9 +428,9 @@ int findLuckyProcess(struct proc* q[], int counter, int ticket) {
 }
 
 int findHighestPriority(struct proc* q[], int counter){
-  int highestPriority = -1, highestIndex = -1;
+  int highestPriority = 10000, highestIndex = -1;
   for (int i = 0; i < counter; i++){
-    if (q[i]->state == RUNNABLE && q[i]->priority > highestPriority){
+    if (q[i]->state == RUNNABLE && q[i]->priority < highestPriority){
       highestIndex = i;
       highestPriority = q[i]->priority;
     }
@@ -515,7 +515,6 @@ scheduler(void)
     
 
     else if (flag == 0 && hasRunnable(priorityQeue, priorityCounter)){
-      // cprintf("pr++++++++++\n");
       int highestPriorityIndex = findHighestPriority(priorityQeue, priorityCounter);
       if (highestPriorityIndex != -1) {
         p = priorityQeue[highestPriorityIndex];
@@ -955,7 +954,7 @@ pti(void) // program table info
   
   sti();
   // acquire(&ptable.lock);
-  cprintf("name \t pid \t state \t priority \t createTime \t type\n");
+  cprintf("name \t pid \t state \t priority \t createTime \t type \t ticket \n");
   cprintf("----------------------------------------------------------------\n");
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
     if(p->state == SLEEPING)

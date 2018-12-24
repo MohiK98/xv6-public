@@ -1,9 +1,9 @@
 #include "types.h"
 #include "user.h"
 
-int main(int argc , char *argv[])
+int main(int argc , char* argv[])
 {
-	if(argc < 3){
+	if(argc < 2){
 	    printf(2, "Usage: pid newType\n");
 	    exit();
   	}
