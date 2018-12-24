@@ -12,27 +12,28 @@ int main(){
     if (pid == 0){
         setProcType(getpid(), FCFS);
     }
-    setProcType(2, FCFS);
+    // setProcType(2, FCFS);
     for (int i = 1; i < NCHILD; i++){
         if (pid != 0){
             pid = fork();
         } else {
-            pti();
+            // pti();
             if (i < 6) {
                 setProcType(getpid(), LOTTERY);
                 setLotteryTicketRange(getpid(), i*4);
+                for(int i = 0; i < 10000000; i++);
             } else if (i < 11) {
                 setProcType(getpid(), FCFS);
-                for(int i = 0; i < 1000; i++);
+                for(int i = 0; i < 100000000; i++);
             }else {
                 setProcType(getpid(), PRIORITY);
-                for(int i = 0; i < 1000; i++);
+                for(int i = 0; i < 100000000; i++);
             }
         }
     }
     if (pid != 0) {
         for (int i = 0; i < NCHILD; i++){
-            pti();
+            // pti();
             wait();
         }
         printf(1, "User Program finished.\n");

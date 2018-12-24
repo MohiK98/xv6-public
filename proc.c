@@ -239,6 +239,15 @@ growproc(int n)
 // Sets up stack to return as if from system call.
 // Caller must set state of returned proc to RUNNABLE.
 int
+strcmp(const char *p, const char *q)
+{
+  while(*p && *p == *q)
+    p++, q++;
+  return (uchar)*p - (uchar)*q;
+}
+
+
+int
 fork(void)
 {
   int i, pid;
@@ -277,9 +286,14 @@ fork(void)
 
   np->state = RUNNABLE;
 
+  // if (strcmp(np->name, "sh") == 0){
+  //   setProcType(np->pid, LOTTERY);
+  //   setLotteryTicketRange(np->pid, 100);
+  // }
+
   release(&ptable.lock);
 
-  cprintf("name for process with pid: %d is %s \n", np->pid, np->name);
+  
 
   // storing new prcoess info in process_info_array
   process_details[process_details_counter].pid = pid;
@@ -442,6 +456,9 @@ struct proc* findProcessByPid(int pid) {
 //  - swtch to start running that process
 //  - eventually that process transfers control
 //      via swtch back to the scheduler.
+
+
+
 void
 scheduler(void)
 {
@@ -472,6 +489,7 @@ scheduler(void)
       // cprintf("sum: %d", ticketRange);
       if(ticketRange != 0){
         int chosenTicket = rand() % ticketRange;
+        cprintf("+++ chusen ticket is %d +++ \n", chosenTicket);
         int chosenProcessPid = findLuckyProcess(lotteryQeue, lotteryCounter, chosenTicket);
         p = findProcessByPid(chosenProcessPid);
         if (p->kstack != 0){
