@@ -9,10 +9,7 @@
 
 int main(){
 	int pid = fork();
-    if (pid == 0){
-        setProcType(getpid(), FCFS);
-    }
-    // setProcType(2, FCFS);
+    int x = 0;
     for (int i = 1; i < NCHILD; i++){
         if (pid != 0){
             pid = fork();
@@ -21,13 +18,26 @@ int main(){
             if (i < 6) {
                 setProcType(getpid(), LOTTERY);
                 setLotteryTicketRange(getpid(), i*4);
-                for(int i = 0; i < 10000000; i++);
+                for(int i = 0; i < 1000000000; i++){
+                    x *= i;      
+                    x = x / i;
+                }
+                break;
             } else if (i < 11) {
                 setProcType(getpid(), FCFS);
-                for(int i = 0; i < 100000000; i++);
+                for(int i = 0; i < 1000000000; i++){
+                    x *= i;      
+                    x = x / i;                    
+                }
+                break;
             }else {
                 setProcType(getpid(), PRIORITY);
-                for(int i = 0; i < 100000000; i++);
+                chpr(getpid(), i);
+                for(int i = 0; i < 10000000000; i++){
+                    x *= i;      
+                    x = x / i;                    
+                }
+                break;
             }
         }
     }

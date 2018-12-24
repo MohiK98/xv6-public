@@ -193,10 +193,12 @@ UPROGS=\
 	_log_syscalls\
 	_zombie\
 	_locktest\
-	_testrw\
 	_dealloc\
 	_testSched\
 	_ps\
+	_chpr\
+	_changeType\
+	
 
 fs.img: mkfs README $(UPROGS)
 	./mkfs fs.img README $(UPROGS)
@@ -267,7 +269,7 @@ EXTRA=\
 	mkfs.c ulib.c user.h cat.c echo.c forktest.c grep.c kill.c\
 	ln.c ls.c mkdir.c rm.c stressfs.c usertests.c wc.c inc_num.c invoked_syscalls.c sort_syscalls.c \
 	ticketlockinit.c ticketlocktest.c rwinit.c rwtest.c get_count.c log_syscalls.c zombie.c\
-	printf.c umalloc.c locktest.c testrw.c dealloc.c testSched.c ps.c\
+	printf.c umalloc.c locktest.c dealloc.c testSched.c ps.c chpr.c changeType.c\
 	README dot-bochsrc *.pl toc.* runoff runoff1 runoff.list\
 	.gdbinit.tmpl gdbutil\
 

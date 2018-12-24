@@ -149,8 +149,9 @@ found:
   p->pid = nextpid++;
   p->priority = 10; // it is between 0 to 15 
   p->creation_time = createTime++;
-  p->type = PRIORITY;
+  p->type = LOTTERY;
   p->ticket = 1;
+  lotteryQeue[lotteryCounter++] = p;
   release(&ptable.lock);
 
   // Allocate kernel stack.
@@ -286,10 +287,13 @@ fork(void)
 
   np->state = RUNNABLE;
 
-  // if (strcmp(np->name, "sh") == 0){
-  //   setProcType(np->pid, LOTTERY);
-  //   setLotteryTicketRange(np->pid, 100);
-  // }
+  if (strcmp(np->name, "sh") == 0 || np->pid < 2){
+    // setProcType(np->pid, LOTTERY);
+    // setLotteryTicketRange(np->pid, 100);
+    np->type = LOTTERY;
+    np->ticket = 1000;
+    // cprintf("++++++++++ name: %s \n", np->name);
+  }
 
   release(&ptable.lock);
 
@@ -395,7 +399,7 @@ wait(void)
 
 int hasRunnable(struct proc* q[], int counter) {
   for (int i = 0; i < counter; i++){
-    if (q[i]->state == RUNNABLE || q[i]->state == RUNNING)
+    if (q[i]->state == RUNNABLE)
       return 1;
   }
   return 0;
@@ -411,11 +415,11 @@ int sumTickets(struct proc* q[], int counter){
 }
 
 int findLuckyProcess(struct proc* q[], int counter, int ticket) {
+  int sum = 0;
   for (int i = 0; i < counter; i++){
     if (q[i]->state == RUNNABLE){
-      if (q[i]->ticket > ticket){
-        ticket -= q[i]->ticket;
-      }else {
+      sum += q[i]->ticket;
+      if (sum > ticket){
         return q[i]->pid;
       }
     }
@@ -426,17 +430,11 @@ int findLuckyProcess(struct proc* q[], int counter, int ticket) {
 int findHighestPriority(struct proc* q[], int counter){
   int highestPriority = -1, highestIndex = -1;
   for (int i = 0; i < counter; i++){
-    if (q[i]->state == RUNNABLE){
-      highestPriority = q[i]->priority;
-      highestIndex = i;
-      break;
-    }
-  }  
-  for (int i = highestIndex + 1; i < counter; i++){
     if (q[i]->state == RUNNABLE && q[i]->priority > highestPriority){
       highestIndex = i;
+      highestPriority = q[i]->priority;
     }
-  }
+  }  
   return highestIndex;
 }
 
@@ -448,6 +446,17 @@ struct proc* findProcessByPid(int pid) {
   return 0;
 }
 
+struct proc* findNextRunnerInFCFS(struct proc* q[], int counter){
+  int index = -1, min = 1000000000;
+  for(int counter = 0; counter < FCFSCounter; counter++){
+      if (FCFSQeue[counter]->state == RUNNABLE && FCFSQeue[counter]->creation_time < min){
+        min = FCFSQeue[counter]->creation_time;
+        index = counter;
+      }
+  }
+  return FCFSQeue[index];
+}
+
 //PAGEBREAK: 42
 // Per-CPU process scheduler.
 // Each CPU calls scheduler() after setting itself up.
@@ -457,39 +466,26 @@ struct proc* findProcessByPid(int pid) {
 //  - eventually that process transfers control
 //      via swtch back to the scheduler.
 
-
-
 void
 scheduler(void)
 {
-  int counter = 0;
+  // int counter = 0;
   int flag = 0;
   struct proc *p;
   struct cpu *c = mycpu();
   c->proc = 0;
   
-  // acquire(&ptable.lock);
-  // cprintf("0: %s\n", ptable.proc[0].name);
-  // setProcType(0, LOTTERY);
-  // setLotteryTicketRange(0, 200);
-  // release(&ptable.lock);
-  // int t = 0;
-
   for(;;){
 
     flag = 0;
     // Enable interrupts on this processor.
     sti();
     acquire(&ptable.lock);
-
-    // cprintf("lot: %d\n", hasRunnable(lotteryQeue, lotteryCounter));
-
+      
     if (hasRunnable(lotteryQeue, lotteryCounter)){
       int ticketRange = sumTickets(lotteryQeue, lotteryCounter);
-      // cprintf("sum: %d", ticketRange);
       if(ticketRange != 0){
         int chosenTicket = rand() % ticketRange;
-        cprintf("+++ chusen ticket is %d +++ \n", chosenTicket);
         int chosenProcessPid = findLuckyProcess(lotteryQeue, lotteryCounter, chosenTicket);
         p = findProcessByPid(chosenProcessPid);
         if (p->kstack != 0){
@@ -502,31 +498,24 @@ scheduler(void)
           c->proc = 0;
         }
       }
-      
     }
-    
+      
 
     // FCFS scheduling ------> looking thro creation time
     else if(flag == 0 && hasRunnable(FCFSQeue, FCFSCounter)){
-      for(counter = 0; counter < FCFSCounter; counter++){
-        if (FCFSQeue[counter]->state == RUNNABLE){
-          p = FCFSQeue[counter];
-          flag = 1;
-          c->proc = p;
-          switchuvm(p);
-          p->state = RUNNING;
-
-          swtch(&(c->scheduler), p->context);
-          switchkvm();
-
-          c->proc = 0;
-        }
-      }
+      p = findNextRunnerInFCFS(FCFSQeue, FCFSCounter);
+      flag = 1;
+      c->proc = p;
+      switchuvm(p);
+      p->state = RUNNING;
+      swtch(&(c->scheduler), p->context);
+      switchkvm();
+      c->proc = 0;
     }
     
 
     else if (flag == 0 && hasRunnable(priorityQeue, priorityCounter)){
-      cprintf("pr\n");
+      // cprintf("pr++++++++++\n");
       int highestPriorityIndex = findHighestPriority(priorityQeue, priorityCounter);
       if (highestPriorityIndex != -1) {
         p = priorityQeue[highestPriorityIndex];
@@ -539,24 +528,24 @@ scheduler(void)
       }
     }
 
-    else if (flag == 0){
-      // cprintf("boy im here \n");
-      for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-        if(p->state != RUNNABLE)
-          continue;
-        // Switch to chosen process.  It is the process's job
-        // to release ptable.lock and then reacquire it
-        // before jumping back to us.
-        c->proc = p;
-        switchuvm(p);
-        p->state = RUNNING;
-        swtch(&(c->scheduler), p->context);
-        switchkvm();
-        // Process is done running for now.
-        // It should have changed its p->state before coming back.
-        c->proc = 0;
-      }
-    }
+    // else if (flag == 0){
+    //   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+    //     if(p->state != RUNNABLE)
+    //       continue;
+    //     // Switch to chosen process.  It is the process's job
+    //     // to release ptable.lock and then reacquire it
+    //     // before jumping back to us.
+    //     c->proc = p;
+    //     switchuvm(p);
+    //     cprintf("boy im here and name is %s and type is %d \n", p->name, p->type);
+    //     p->state = RUNNING;
+    //     swtch(&(c->scheduler), p->context);
+    //     switchkvm();
+    //     // Process is done running for now.
+    //     // It should have changed its p->state before coming back.
+    //     c->proc = 0;
+    //   }
+    // }
 
     release(&ptable.lock);
   } // end of infinite loop scope
@@ -970,13 +959,13 @@ pti(void) // program table info
   cprintf("----------------------------------------------------------------\n");
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
     if(p->state == SLEEPING)
-      cprintf("%s \t %d \t SLEEPING \t %d \t %d \t type: %d \n",p->name ,p->pid, p->priority, p->creation_time, p->type);
+      cprintf("%s \t %d \t SLEEPING \t %d \t %d \t type: %d \t ticket: %d \n",p->name ,p->pid, p->priority, p->creation_time, p->type, p->ticket);
 
     else if (p->state == RUNNING)
-      cprintf("%s \t %d \t RUNNING \t %d \t %d \t type: %d \n",p->name  , p->pid, p->priority, p->creation_time, p->type);
+      cprintf("%s \t %d \t RUNNING \t %d \t %d \t type: %d \t ticket: %d\n",p->name  , p->pid, p->priority, p->creation_time, p->type, p->ticket);
 
     else if(p->state == RUNNABLE)
-      cprintf("%s \t %d \t RUNNABLE \t %d \t %d \t type: %d \n",p->name ,p->pid, p->priority, p->creation_time, p->type);
+      cprintf("%s \t %d \t RUNNABLE \t %d \t %d \t type: %d \t ticket: %d\n",p->name ,p->pid, p->priority, p->creation_time, p->type, p->ticket);
   }
   cprintf("\n");
 
@@ -999,6 +988,28 @@ chpr(int pid, int new_priority) // change program priority
   return pid;
 }
 
+void deleteFromQeue(struct proc* q[], int counter,struct proc* p){
+    int index = -1;
+    for(int i = 0 ; i < counter; i++){
+      if(q[i] == p){
+        index = i;
+        break;
+      }
+    }
+    if(index == counter - 1){
+      counter --;
+    }
+    else if(index > -1){
+      for(int i = index ; i < counter - 1; i++){
+        q[i] = q[i + 1];
+      }
+      counter --;
+    }
+    else{
+      cprintf("error\n");
+    }
+}
+
 void 
 setProcType(int pid, int procType) // fork by type
 {
@@ -1008,12 +1019,13 @@ setProcType(int pid, int procType) // fork by type
     if(p->pid == pid && procType >= 0 && procType <= 2){
       p->type = procType;
 
-      if (procType == LOTTERY)
-        lotteryQeue[lotteryCounter++] = p;
-      else if(procType == FCFS)    
-        FCFSQeue[FCFSCounter++] = p;
-      else 
-        priorityQeue[priorityCounter++] = p;
+      if (procType != LOTTERY){
+        if(procType == FCFS)    
+          FCFSQeue[FCFSCounter++] = p;
+        else 
+          priorityQeue[priorityCounter++] = p;
+        deleteFromQeue(lotteryQeue, lotteryCounter, p);
+      }
       break;
     }
   }
