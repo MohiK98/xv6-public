@@ -132,10 +132,10 @@ void 			rwinit(void);
 void			rwtest(uint);
 int 			uptime(void);
 void 			dealloc(void);
-int             pti(void);
-int             chpr(int pid, int newPriority);    
-void            setLotteryTicketRange(int pid, int amount); 
-void            setProcType(int pid, int procType);
+int 			shm_open(int id, int page_count, int flag);
+void*			shm_attach(int id);
+int 			shm_close(int id);
+
 
 // swtch.S
 void            swtch(struct context**, struct context*);

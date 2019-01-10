@@ -114,9 +114,6 @@ exec(char *path, char **argv)
   curproc->sz = sz;
   curproc->tf->eip = elf.entry;  // main
   curproc->tf->esp = sp;
-  curproc->ticket = rand() % 50 + 100;
-  curproc->type = LOTTERY;
-  // cprintf("++++++++ %d\n", curproc->type);
   switchuvm(curproc);
   freevm(oldpgdir);
   return 0;

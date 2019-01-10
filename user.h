@@ -33,10 +33,10 @@ int ticketlocktest(void);
 int rwinit(void);
 int rwtest(uint);
 int dealloc(void);
-int pti(void);
-int chpr(int pid, int newPriority);
-void setProcType(int pid, int procType);
-void setLotteryTicketRange(int pid, int amount);
+int shm_open(int id, int page_count, int flag);
+void* shm_attach(int id);
+int shm_close(int id);
+
 
 // ulib.c
 int stat(const char*, struct stat*);

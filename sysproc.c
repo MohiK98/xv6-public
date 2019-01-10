@@ -165,43 +165,22 @@ void sys_dealloc(void)
   return dealloc();
 }
 
-int sys_pti(void)
-{
-  return pti();
+int sys_shm_open(void) {
+  int id, page_count, flag;
+  argint(0, &id);
+  argint(1, &page_count);
+  argint(2, &flag);
+  return shm_open(id, page_count, flag);
 }
 
-int sys_chpr(void){
-  int pid;
-  int newPriority;
-  if(argint(0, &pid) < 0){
-    return -1;
-  }
-  if(argint(1, &newPriority) < 0){
-    return -1;
-  }
-  return chpr(pid, newPriority);
+void* sys_shm_attach(void) {
+  int id;
+  argint(0, &id);
+  return shm_attach(id);
 }
 
-void sys_setProcType(void){
-  int pid;
-  int procType;
-  if(argint(0, &pid) < 0){
-    return;
-  }
-  if(argint(1, &procType) < 0){
-    return;
-  }
-  return setProcType(pid, procType);
-}
-
-void sys_setLotteryTicketRange(void){
-  int pid;
-  int amount;
-  if(argint(0, &pid) < 0){
-    return;
-  }
-  if(argint(1, &amount) < 0){
-    return;
-  }
-  return setLotteryTicketRange(pid, amount);
+int sys_shm_close(void) {
+  int id;
+  argint(0, &id);
+  return shm_close(id);
 }

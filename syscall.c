@@ -122,6 +122,9 @@ extern int sys_pti(void);
 extern int sys_chpr(void);
 extern int sys_setProcType(void);
 extern int sys_setLotteryTicketRange(void);
+extern int sys_shm_open(void);
+extern int sys_shm_attach(void);
+extern int sys_shm_close(void);
 
 static int (*syscalls[])(void) = {
 [SYS_fork]    sys_fork,
@@ -155,10 +158,9 @@ static int (*syscalls[])(void) = {
 [SYS_rwinit] sys_rwinit ,
 [SYS_rwtest] sys_rwtest ,
 [SYS_dealloc] sys_dealloc,
-[SYS_pti] sys_pti,
-[SYS_chpr] sys_chpr,
-[SYS_setProcType] sys_setProcType,
-[SYS_setLotteryTicketRange] sys_setLotteryTicketRange,
+[SYS_shm_open] sys_shm_open,
+[SYS_shm_attach] sys_shm_attach,
+[SYS_shm_close] sys_shm_close,
 };
 
 
