@@ -54,13 +54,9 @@ void init_syscall_map() {
 struct process_info process_details[128];
 int process_details_counter = 0;
 
-// template testing for three qeue of schedule PRIORITY && LOTTERY && FCFS
-struct proc* lotteryQeue[NPROC];
-int lotteryCounter = 0;
-struct proc* FCFSQeue[NPROC];
-int FCFSCounter = 0;
-struct proc* priorityQeue[NPROC];
-int priorityCounter = 0;
+struct shared_memory shared_memories[128];
+int shared_memory_counter = 0;
+
 
 struct {
   struct spinlock lock;
@@ -837,20 +833,68 @@ dealloc(void)
   return;
 }
 
+
+// duck: 1-> only_owner_write && 2->only_child_can_attach
 int 
 shm_open(int id, int page_count, int flag) {
-  cprintf("shm_open\n");
+  for (int i = 0; i < shared_memory_counter; i++) {
+    if (shared_memories[i].id == id) {
+      return -1;
+    }
+  }
+  struct shared_memory* shm = &shared_memories[shared_memory_counter];
+  shm->owner_pid = myproc()->pid;
+  shm->id = id;
+  shm->flag = flag;
+  shm->ref_count = 1;
+  shm->size = page_count;
+  shm->frame_counter = 0;
+  for (int i = 0; i < page_count; i++) {
+    char* new_frame = kalloc();
+    if (new_frame == 0) {
+      return -1;
+    }
+    shm->frames[shm->frame_counter++] = new_frame;
+  }
   return 0;
 }
 
 void* 
 shm_attach(int id) {
-  cprintf("shm_attach\n");
-  return 0;
+  struct shared_memory* shm = 0;
+  for (int i = 0; i < shared_memory_counter; i++) {
+    if (shared_memories[i].id == id) {
+      shm = &shared_memories[i];
+      break;
+    }
+  }
+  if (shm == 0) {
+    return 0;
+  }
+  if (shm->flag == 2 && shm->owner_pid != myproc()->parent->pid) 
+    return 0;
+  shm->ref_count++;
+  // handle mappages()
+  return shm->frames[0];
 }
 
 int 
 shm_close(int id) {
-  cprintf("shm_close\n");
+  struct shared_memory* shm = 0;
+  for (int i = 0; i < shared_memory_counter; i++) {
+    if (shared_memories[i].id == id) {
+      shm = &shared_memories[i];
+      break;
+    }
+  }
+  if (shm == 0) {
+    return -1;
+  }
+  shm->ref_count--;
+  if (shm->ref_count == 0) {
+    for (int i = 0; i < shm->frame_counter; i++) {
+      kfree(shm->frames[i]);
+    }
+  }
   return 0;
 }

@@ -95,3 +95,13 @@ int syscall_arg_count[30];
 
 struct syscall_info* sys_log[16384];
 int sys_log_counter;
+
+struct shared_memory {
+  int owner_pid;
+  int id;
+  int flag;
+  int ref_count;
+  int size;
+  char* frames[128];
+  int frame_counter;
+};
