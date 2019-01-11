@@ -834,7 +834,7 @@ dealloc(void)
 }
 
 
-// duck: 1-> only_owner_write && 2->only_child_can_attach
+// doc: 1-> only_owner_write && 2->only_child_can_attach
 int 
 shm_open(int id, int page_count, int flag) {
   for (int i = 0; i < shared_memory_counter; i++) {
@@ -842,7 +842,7 @@ shm_open(int id, int page_count, int flag) {
       return -1;
     }
   }
-  struct shared_memory* shm = &shared_memories[shared_memory_counter];
+  struct shared_memory* shm = &shared_memories[shared_memory_counter++];
   shm->owner_pid = myproc()->pid;
   shm->id = id;
   shm->flag = flag;
@@ -856,11 +856,15 @@ shm_open(int id, int page_count, int flag) {
     }
     shm->frames[shm->frame_counter++] = new_frame;
   }
+  shm->pgdir = (pde_t*)kalloc();
+  memset(shm->pgdir, 0, sizeof(*shm->pgdir));
+  // mappages(shm->pgdir, (void*)shm->frames[0], PGSIZE*shm->frame_counter, V2P(shm->frames[0]), PTE_W|PTE_U|PTE_P);
   return 0;
 }
 
 void* 
 shm_attach(int id) {
+  // acquire(&ptable.lock);
   struct shared_memory* shm = 0;
   for (int i = 0; i < shared_memory_counter; i++) {
     if (shared_memories[i].id == id) {
@@ -874,8 +878,13 @@ shm_attach(int id) {
   if (shm->flag == 2 && shm->owner_pid != myproc()->parent->pid) 
     return 0;
   shm->ref_count++;
-  // handle mappages()
-  return shm->frames[0];
+  // if (shm->flag == 1) {
+  //   mappages(shm->pgdir, shm->frames[0], PGSIZE*shm->frame_counter, V2P(shm->frames[0]), PTE_W|PTE_U|PTE_P);
+  // } else {
+  //   mappages(shm->pgdir, shm->frames[0], PGSIZE*shm->frame_counter, V2P(shm->frames[0]), PTE_U|PTE_P);
+  // }
+  // release(&ptable.lock);
+  return (uint*)shm->frames[0];
 }
 
 int 

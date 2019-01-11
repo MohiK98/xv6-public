@@ -1,3 +1,4 @@
+
 #include "types.h"
 #include "stat.h"
 #include "user.h"
@@ -10,8 +11,8 @@ main(int argc, char *argv[])
     printf(2, "Usage: shm_attach id\n");
     exit();
   }
-
-  shm_attach(atoi(argv[1]));
+  void* res = shm_attach(atoi(argv[1]));
+  printf(2, "%s", res);
 
   exit();
 }

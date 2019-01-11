@@ -102,6 +102,7 @@ struct shared_memory {
   int flag;
   int ref_count;
   int size;
+  pde_t* pgdir;
   char* frames[128];
   int frame_counter;
 };
