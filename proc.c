@@ -859,9 +859,6 @@ shm_open(int id, int page_count, int flag) {
     cprintf("number of shared memory for current process is overfilled \n");
     return -1;
   }
-  
-  // p->shared_memory_ids[p->number_of_shared_memories] = id;
-  // p->number_of_shared_memories ++;
 
   for (int i = 0; i < shared_memory_counter; i++) {
     if (shared_memories[i].id == id) {
@@ -878,8 +875,6 @@ shm_open(int id, int page_count, int flag) {
   shm->frame_counter = 0;
   shm->is_valid = 1;
 
-  
-
   for (int i = 0; i < page_count; i++) {
     char* new_frame = kalloc();
     if (new_frame == 0) {
@@ -888,7 +883,6 @@ shm_open(int id, int page_count, int flag) {
     }
     shm->frames[shm->frame_counter++] = new_frame;
   }
-  // growproc(PGSIZE * shm->frame_counter);
   return 0;
 }
 
@@ -907,17 +901,12 @@ shm_attach(int id) {
     return 0;
   }
     
-
-
   if (shm->flag == ONLY_CHILD_CAN_ATTACH && shm->owner_pid != myproc()->parent->pid){
     return 0;
     cprintf("only chid can attach \n");
   } 
 
-
-
   struct proc *p;
-
   p = myproc();
   
   for(int i = 0; i < p->number_of_shared_memories; i++){
@@ -929,33 +918,23 @@ shm_attach(int id) {
 
   p->shared_memory_ids[p->number_of_shared_memories++] = id;
   sz = p->sz;
-  // growproc(PGSIZE * shm->frame_counter);
-  // cprintf("the size is: %d \n",p->sz);
 
   if(p->pid == shm->owner_pid){
     mappages(p->pgdir, (void*)sz, PGSIZE*shm->frame_counter, V2P(shm->frames[0]), PTE_W|PTE_U|PTE_P);
-    // growproc(PGSIZE * shm->frame_counter);
     p->sz += PGSIZE * shm->frame_counter;
   } 
   else if (shm->flag != ONLY_OWNER_WRITE && shm->flag != BOTH_FLAGS) {
     mappages(p->pgdir, (void*)sz, PGSIZE*shm->frame_counter, V2P(shm->frames[0]), PTE_W|PTE_U|PTE_P);
-    // growproc(PGSIZE * shm->frame_counter);    
     p->sz += PGSIZE * shm->frame_counter;
     shm->ref_count++;  
   }
    else {
     mappages(p->pgdir, (void*)sz, PGSIZE*shm->frame_counter, V2P(shm->frames[0]), PTE_U|PTE_P);
-    // growproc(PGSIZE * shm->frame_counter);
-
     p->sz += PGSIZE * shm->frame_counter;
     shm->ref_count++;
   }
   
   cprintf("new process with pid: %d attached. number of attachs: %d \n", p->pid, shm->ref_count);
-
-  // cprintf("the frame counter is %d \n", shm->frame_counter);
-  // cprintf("the size is: %d \n",p->sz);
-
   return 0;
 }
 
@@ -974,11 +953,8 @@ shm_close(int id) {
     return -1;
   }
   shm->ref_count--;
-  // deallocuvm(p->pgdir, p->sz, p->sz - PGSIZE * shm->frame_counter);
-  // p->sz = p->sz - PGSIZE * shm->frame_counter;
 
   cprintf("shm_close on pid: %d . number of proc attached: %d \n", p->pid, shm->ref_count);
-
   if (shm->ref_count == 0) {
     cprintf("free shared memory \n");
     for (int i = 0; i < shm->frame_counter; i++) {

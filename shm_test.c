@@ -11,7 +11,7 @@ main(int argc, char *argv[])
 
 	if (argc != 4){
 		printf(1, "usage: shared memory id, pageCount, flag\n");
-		return 0;
+		exit();
 	}
 	int page_count = atoi(argv[2]);
 	int id = atoi(argv[1]);
@@ -22,13 +22,11 @@ main(int argc, char *argv[])
 		int pid = fork();
 		if (pid == 0){
 			shm_attach(id);
-			// shm_close(id);
 			exit();
 		} 
 	}
 	for (int i = 0; i < NUM_OF_CHILDS; i++) {
 		wait();
 	}
-	// shm_close(id);
 	exit();
 }
