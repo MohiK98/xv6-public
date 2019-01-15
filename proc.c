@@ -872,10 +872,14 @@ shm_open(int id, int page_count, int flag) {
   shm->owner_pid = myproc()->pid;
   shm->id = id;
   shm->flag = flag;
-  shm->ref_count = 0;
+  shm->ref_count = 1;
   shm->size = page_count;
   shm->frame_counter = 0;
   shm->is_valid = 1;
+
+  allocuvm(p->pgdir, p->sz, p->sz + PGSIZE * shm->frame_counter);
+  p->sz += PGSIZE * shm->frame_counter;
+  
   for (int i = 0; i < page_count; i++) {
     char* new_frame = kalloc();
     if (new_frame == 0) {
@@ -903,7 +907,7 @@ shm_attach(int id) {
   if (shm->flag == ONLY_CHILD_CAN_ATTACH && shm->owner_pid != myproc()->parent->pid) 
     return 0;
 
-  shm->ref_count++;
+  
 
   struct proc *p;
 
@@ -913,10 +917,20 @@ shm_attach(int id) {
     mappages(p->pgdir, (void*)p->sz, PGSIZE*shm->frame_counter, V2P(shm->frames[0]), PTE_W|PTE_U|PTE_P);
   } else if (shm->flag != ONLY_OWNER_WRITE && shm->flag != BOTH_FLAGS) {
     mappages(p->pgdir, (void*)p->sz, PGSIZE*shm->frame_counter, V2P(shm->frames[0]), PTE_W|PTE_U|PTE_P);
+    shm->ref_count++;
+    
+    allocuvm(p->pgdir, p->sz, p->sz + PGSIZE * shm->frame_counter);
+    p->sz += PGSIZE * shm->frame_counter;
+  
   } else {
     mappages(p->pgdir, (void*)p->sz, PGSIZE*shm->frame_counter, V2P(shm->frames[0]), PTE_U|PTE_P);
+    shm->ref_count++;
+
+    allocuvm(p->pgdir, p->sz, p->sz + PGSIZE * shm->frame_counter);
+    p->sz += PGSIZE * shm->frame_counter;
+
   }
-  p->sz += PGSIZE * shm->frame_counter;
+  
 
   cprintf("the frame counter is %d \n", shm->frame_counter);
   cprintf("the size is: %d \n",p->sz);
@@ -926,6 +940,7 @@ shm_attach(int id) {
 
 int 
 shm_close(int id) {
+  struct proc* p = myproc();
   struct shared_memory* shm = 0;
   for (int i = 0; i < shared_memory_counter; i++) {
     if (shared_memories[i].id == id && shared_memories[i].is_valid) {
@@ -937,6 +952,8 @@ shm_close(int id) {
     return -1;
   }
   shm->ref_count--;
+  deallocuvm(p->pgdir, p->sz, p->sz - PGSIZE * shm->frame_counter);
+  p->sz = p->sz - PGSIZE * shm->frame_counter;
   cprintf("free shared memory++ \n");
   if (shm->ref_count == 0) {
     cprintf("free shared memory \n");
