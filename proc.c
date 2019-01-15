@@ -982,7 +982,7 @@ shm_close(int id) {
   if (shm->ref_count == 0) {
     cprintf("free shared memory \n");
     for (int i = 0; i < shm->frame_counter; i++) {
-      kfree(shm->frames[i]);
+      // kfree(shm->frames[i]);
     }
     shm->is_valid = 0;
   }

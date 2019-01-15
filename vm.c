@@ -270,8 +270,8 @@ deallocuvm(pde_t *pgdir, uint oldsz, uint newsz)
       pa = PTE_ADDR(*pte);
       if(pa == 0)
         panic("kfree");
-      char *v = P2V(pa);
-      kfree(v);
+      // char *v = P2V(pa);
+      // kfree(v);
       *pte = 0;
     }
   }
