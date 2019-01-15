@@ -8,21 +8,27 @@
 int
 main(int argc, char *argv[])
 {
-	int page_count = 1;
-	int id = 10;
-	int flag = 1;
+
+	if (argc != 4){
+		printf(1, "usage: shared memory id, pageCount, flag\n");
+		return 0;
+	}
+	int page_count = atoi(argv[2]);
+	int id = atoi(argv[1]);
+	int flag = atoi(argv[3]);
 	shm_open(id, page_count, flag);
+	shm_attach(id);
 	for (int i = 0; i < NUM_OF_CHILDS; i++) {
 		int pid = fork();
 		if (pid == 0){
 			shm_attach(id);
-			shm_close(id);
+			// shm_close(id);
 			exit();
 		} 
 	}
 	for (int i = 0; i < NUM_OF_CHILDS; i++) {
 		wait();
 	}
-	shm_close(id);
+	// shm_close(id);
 	exit();
 }
