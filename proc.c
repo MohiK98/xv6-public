@@ -884,14 +884,11 @@ shm_open(int id, int page_count, int flag) {
     }
     shm->frames[shm->frame_counter++] = new_frame;
   }
-
-
   return 0;
 }
 
 void* 
 shm_attach(int id) {
-  // acquire(&ptable.lock);
   struct shared_memory* shm = 0;
   for (int i = 0; i < shared_memory_counter; i++) {
     if (shared_memories[i].id == id && shared_memories[i].is_valid) {
@@ -899,11 +896,9 @@ shm_attach(int id) {
       break;
     }
   }
-
-
-  if (shm == 0) {
+  if (shm == 0)
     return 0;
-  }
+
 
   if (shm->flag == ONLY_CHILD_CAN_ATTACH && shm->owner_pid != myproc()->parent->pid) 
     return 0;
@@ -916,13 +911,12 @@ shm_attach(int id) {
 
   if(p->pid == shm->owner_pid){
     mappages(p->pgdir, (void*)p->sz, PGSIZE*shm->frame_counter, V2P(shm->frames[0]), PTE_W|PTE_U|PTE_P);
-  }
-  else if (shm->flag != ONLY_OWNER_WRITE) {
+  } else if (shm->flag != ONLY_OWNER_WRITE && shm->flag != BOTH_FLAGS) {
     mappages(p->pgdir, (void*)p->sz, PGSIZE*shm->frame_counter, V2P(shm->frames[0]), PTE_W|PTE_U|PTE_P);
   } else {
     mappages(p->pgdir, (void*)p->sz, PGSIZE*shm->frame_counter, V2P(shm->frames[0]), PTE_U|PTE_P);
   }
-  p->sz = PGSIZE * shm->frame_counter + p->sz;
+  p->sz += PGSIZE * shm->frame_counter;
 
   cprintf("the frame counter is %d \n", shm->frame_counter);
   cprintf("the size is: %d \n",p->sz);
