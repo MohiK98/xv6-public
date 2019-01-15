@@ -182,6 +182,7 @@ UPROGS=\
 	_stressfs\
 	_usertests\
 	_wc\
+	_shm_test\
 	_shm_open\
 	_shm_attach\
 	_shm_close\
@@ -193,7 +194,6 @@ UPROGS=\
 	_rwinit\
 	_rwtest\
 	_get_count\
-	_log_syscalls\
 	_zombie\
 	_locktest\
 	_testrw\
@@ -267,9 +267,9 @@ qemu-nox-gdb: fs.img xv6.img .gdbinit
 EXTRA=\
 	mkfs.c ulib.c user.h cat.c echo.c forktest.c grep.c kill.c\
 	ln.c ls.c mkdir.c rm.c stressfs.c usertests.c wc.c inc_num.c invoked_syscalls.c sort_syscalls.c \
-	ticketlockinit.c ticketlocktest.c rwinit.c rwtest.c get_count.c log_syscalls.c zombie.c\
+	ticketlockinit.c ticketlocktest.c rwinit.c rwtest.c get_count.c zombie.c\
 	printf.c umalloc.c locktest.c testrw.c dealloc.c\
-	shm_open.c shm_attach.c shm_close.c\
+	shm_test.c shm_open.c shm_attach.c shm_close.c \
 	README dot-bochsrc *.pl toc.* runoff runoff1 runoff.list\
 	.gdbinit.tmpl gdbutil\
 
