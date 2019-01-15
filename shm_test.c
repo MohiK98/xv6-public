@@ -8,7 +8,7 @@
 int
 main(int argc, char *argv[])
 {
-	int page_count = 4;
+	int page_count = 1;
 	int id = 10;
 	int flag = 1;
 	shm_open(id, page_count, flag);
@@ -17,7 +17,7 @@ main(int argc, char *argv[])
 		if (pid == 0){
 			shm_attach(id);
 			shm_close(id);
-			return 0;
+			exit();
 		} 
 	}
 	for (int i = 0; i < NUM_OF_CHILDS; i++) {
