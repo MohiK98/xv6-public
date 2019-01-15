@@ -11,8 +11,8 @@ main(int argc, char *argv[])
     printf(2, "Usage: shm_attach id\n");
     exit();
   }
-  void* res = shm_attach(atoi(argv[1]));
-  printf(2, "%s", res);
+  // void* res = shm_attach(atoi(argv[1]));
+  shm_attach(atoi(argv[1]));
 
   exit();
 }

@@ -13,5 +13,7 @@ main(int argc, char *argv[])
 
   shm_close(atoi(argv[1]));
 
+  printf(2, "yes/n");
+
   exit();
 }

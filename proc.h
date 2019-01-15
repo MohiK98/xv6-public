@@ -54,6 +54,8 @@ struct proc {
   struct file *ofile[NOFILE];  // Open files
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
+  int shared_memory_ids[16];
+  int number_of_shared_memories;
 };
 
 // Process memory is laid out contiguously, low addresses first:
@@ -96,13 +98,16 @@ int syscall_arg_count[30];
 struct syscall_info* sys_log[16384];
 int sys_log_counter;
 
+
+enum shm_flag {NOFLAG, ONLY_OWNER_WRITE, ONLY_CHILD_CAN_ATTACH, BOTH_FLAGS};
+
 struct shared_memory {
   int owner_pid;
+  int is_valid;
   int id;
   int flag;
   int ref_count;
   int size;
-  pde_t* pgdir;
   char* frames[128];
   int frame_counter;
 };

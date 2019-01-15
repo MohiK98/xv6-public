@@ -272,7 +272,19 @@ fork(void)
 
   safestrcpy(np->name, curproc->name, sizeof(curproc->name));
 
+
   pid = np->pid;
+
+  // shared memory part
+  np->number_of_shared_memories = 0;
+
+  if(np->parent->number_of_shared_memories > 0 && np->parent->number_of_shared_memories < 16){
+    for(i = 0; i < np->parent->number_of_shared_memories; i++){
+      shm_attach(np->parent->shared_memory_ids[i]);
+      np->shared_memory_ids[np->number_of_shared_memories] = np->parent->shared_memory_ids[i];
+      np->number_of_shared_memories ++; 
+    }
+  }
 
   acquire(&ptable.lock);
 
@@ -302,7 +314,7 @@ exit(void)
   struct proc *curproc = myproc();
   struct proc *p;
   int fd;
-
+  int i;
   if(curproc == initproc)
     panic("init exiting");
 
@@ -331,6 +343,10 @@ exit(void)
       if(p->state == ZOMBIE)
         wakeup1(initproc);
     }
+  }
+
+  for(i = 0; i < curproc->number_of_shared_memories; i++){
+    shm_close(curproc->shared_memory_ids[i]);
   }
 
   // Jump into the scheduler, never to return.
@@ -834,9 +850,19 @@ dealloc(void)
 }
 
 
-// doc: 1-> only_owner_write && 2->only_child_can_attach
+//enum shm_flag {NOFLAG, ONLY_OWNER_WRITE, ONLY_CHILD_CAN_ATTACH, BOTH_FLAGS};
+
 int 
 shm_open(int id, int page_count, int flag) {
+  struct proc* p = myproc();
+  if(p->number_of_shared_memories > 15){
+    cprintf("number of shared memory for current process is overfilled \n");
+    return -1;
+  }
+  
+  p->shared_memory_ids[p->number_of_shared_memories] = id;
+  p->number_of_shared_memories ++;
+
   for (int i = 0; i < shared_memory_counter; i++) {
     if (shared_memories[i].id == id) {
       return -1;
@@ -846,19 +872,20 @@ shm_open(int id, int page_count, int flag) {
   shm->owner_pid = myproc()->pid;
   shm->id = id;
   shm->flag = flag;
-  shm->ref_count = 1;
+  shm->ref_count = 0;
   shm->size = page_count;
   shm->frame_counter = 0;
+  shm->is_valid = 1;
   for (int i = 0; i < page_count; i++) {
     char* new_frame = kalloc();
     if (new_frame == 0) {
+      cprintf("free memory filled \n");
       return -1;
     }
     shm->frames[shm->frame_counter++] = new_frame;
   }
-  shm->pgdir = (pde_t*)kalloc();
-  memset(shm->pgdir, 0, sizeof(*shm->pgdir));
-  // mappages(shm->pgdir, (void*)shm->frames[0], PGSIZE*shm->frame_counter, V2P(shm->frames[0]), PTE_W|PTE_U|PTE_P);
+
+
   return 0;
 }
 
@@ -867,31 +894,47 @@ shm_attach(int id) {
   // acquire(&ptable.lock);
   struct shared_memory* shm = 0;
   for (int i = 0; i < shared_memory_counter; i++) {
-    if (shared_memories[i].id == id) {
+    if (shared_memories[i].id == id && shared_memories[i].is_valid) {
       shm = &shared_memories[i];
       break;
     }
   }
+
+
   if (shm == 0) {
     return 0;
   }
-  if (shm->flag == 2 && shm->owner_pid != myproc()->parent->pid) 
+
+  if (shm->flag == ONLY_CHILD_CAN_ATTACH && shm->owner_pid != myproc()->parent->pid) 
     return 0;
+
   shm->ref_count++;
-  // if (shm->flag == 1) {
-  //   mappages(shm->pgdir, shm->frames[0], PGSIZE*shm->frame_counter, V2P(shm->frames[0]), PTE_W|PTE_U|PTE_P);
-  // } else {
-  //   mappages(shm->pgdir, shm->frames[0], PGSIZE*shm->frame_counter, V2P(shm->frames[0]), PTE_U|PTE_P);
-  // }
-  // release(&ptable.lock);
-  return (uint*)shm->frames[0];
+
+  struct proc *p;
+
+  p = myproc();
+
+  if(p->pid == shm->owner_pid){
+    mappages(p->pgdir, (void*)p->sz, PGSIZE*shm->frame_counter, V2P(shm->frames[0]), PTE_W|PTE_U|PTE_P);
+  }
+  else if (shm->flag != ONLY_OWNER_WRITE) {
+    mappages(p->pgdir, (void*)p->sz, PGSIZE*shm->frame_counter, V2P(shm->frames[0]), PTE_W|PTE_U|PTE_P);
+  } else {
+    mappages(p->pgdir, (void*)p->sz, PGSIZE*shm->frame_counter, V2P(shm->frames[0]), PTE_U|PTE_P);
+  }
+  p->sz = PGSIZE * shm->frame_counter + p->sz;
+
+  cprintf("the frame counter is %d \n", shm->frame_counter);
+  cprintf("the size is: %d \n",p->sz);
+
+  return 0;
 }
 
 int 
 shm_close(int id) {
   struct shared_memory* shm = 0;
   for (int i = 0; i < shared_memory_counter; i++) {
-    if (shared_memories[i].id == id) {
+    if (shared_memories[i].id == id && shared_memories[i].is_valid) {
       shm = &shared_memories[i];
       break;
     }
@@ -900,10 +943,13 @@ shm_close(int id) {
     return -1;
   }
   shm->ref_count--;
+  cprintf("free shared memory++ \n");
   if (shm->ref_count == 0) {
+    cprintf("free shared memory \n");
     for (int i = 0; i < shm->frame_counter; i++) {
       kfree(shm->frames[i]);
     }
+    shm->is_valid = 0;
   }
   return 0;
 }
