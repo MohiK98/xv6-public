@@ -339,6 +339,7 @@ copyuvm(pde_t *pgdir, uint sz)
           flag = 1;
           mem = (void*)parent->shm_info[i].pa; 
           mappages(d, (void*)i, PGSIZE, V2P(i), flags);
+          cprintf("child attaching to vm \n");
           break;
         }
       }

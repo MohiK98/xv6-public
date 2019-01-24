@@ -290,6 +290,7 @@ fork(void)
       for(int j = 0 ; j < shared_memory_counter; j++){
         if(shared_memories[j].id == np->shm_info[i].id){
           shared_memories[j].ref_count ++;
+          break;
         } 
       }
     }
@@ -889,7 +890,7 @@ shm_open(int id, int page_count, int flag) {
     if (new_frame == 0) {
       cprintf("free memory filled \n");
       return -1;
-    }
+      }
     shm->frames[shm->frame_counter++] = new_frame;
   }
   return 0;

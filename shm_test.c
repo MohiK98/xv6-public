@@ -18,7 +18,6 @@ main(int argc, char *argv[])
 	int id = atoi(argv[1]);
 	int flag = atoi(argv[3]);
 	shm_open(id, page_count, flag);
-	
 	for (int i = 0; i < NUM_OF_CHILDS; i++) {
 		int pid = fork();
 		if (pid == 0){
@@ -31,7 +30,7 @@ main(int argc, char *argv[])
 	for (int i = 0; i < NUM_OF_CHILDS; i++) {
 		wait();
 	}
-	arr = shm_attach(id);
+	arr = shm_attach(id);	
 	printf(1, "Parent: |%c|\n", arr[0]);
 	exit();
 }
