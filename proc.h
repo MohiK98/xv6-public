@@ -38,6 +38,12 @@ struct context {
 
 enum procstate { UNUSED, EMBRYO, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
 enum procType {LOTTERY, FCFS, PRIORITY};
+ 
+struct SHM_INFO{
+  uint pa;
+  int id;
+  int flag;
+};
 
 // Per-process state
 struct proc {
@@ -54,8 +60,9 @@ struct proc {
   struct file *ofile[NOFILE];  // Open files
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
-  int shared_memory_ids[16];
+  // int shared_memory_ids[16];
   int number_of_shared_memories;
+  struct SHM_INFO shm_info[16];
 };
 
 // Process memory is laid out contiguously, low addresses first:

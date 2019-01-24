@@ -283,6 +283,15 @@ fork(void)
       // shm_attach(np->parent->shared_memory_ids[i]);
       // np->shared_memory_ids[np->number_of_shared_memories] = np->parent->shared_memory_ids[i];
       // np->number_of_shared_memories ++; 
+      np->shm_info[i].pa = np->parent->shm_info[i].pa;
+      np->shm_info[i].flag = np->parent->shm_info[i].flag;
+      np->shm_info[i].id = np->parent->shm_info[i].id;
+      np->number_of_shared_memories ++;
+      for(int j = 0 ; j < shared_memory_counter; j++){
+        if(shared_memories[j].id == np->shm_info[i].id){
+          shared_memories[j].ref_count ++;
+        } 
+      }
     }
   }
 
@@ -346,7 +355,7 @@ exit(void)
   }
 
   for(i = 0; i < curproc->number_of_shared_memories; i++){
-    shm_close(curproc->shared_memory_ids[i]);
+    shm_close(curproc->shm_info[i].id);
   }
 
   // Jump into the scheduler, never to return.
@@ -921,30 +930,31 @@ shm_attach(int id) {
   p = myproc();
   
   for(int i = 0; i < p->number_of_shared_memories; i++){
-    if(p->shared_memory_ids[i] == id){
+    if(p->shm_info[i].id == id){
       cprintf("you are attached to this shared memory no need to attach again \n");
       return 0;
     }
   }
 
-  p->shared_memory_ids[p->number_of_shared_memories++] = id;
+  p->shm_info[p->number_of_shared_memories].id = id;
+  p->shm_info[p->number_of_shared_memories].flag = shm->flag;
   sz = p->sz;
   // growproc(PGSIZE * shm->frame_counter);
   // cprintf("the size is: %d \n",p->sz);
 
   if(p->pid == shm->owner_pid){
-    mappages(p->pgdir, (void*)sz, PGSIZE*shm->frame_counter, V2P(shm->frames[0]), PTE_W|PTE_U|PTE_P);
+    mappages(p->pgdir, (void*)PGROUNDUP(sz), PGSIZE*shm->frame_counter, V2P(shm->frames[0]), PTE_W|PTE_U|PTE_P);
     // growproc(PGSIZE * shm->frame_counter);
     p->sz += PGSIZE * shm->frame_counter;
   } 
   else if (shm->flag != ONLY_OWNER_WRITE && shm->flag != BOTH_FLAGS) {
-    mappages(p->pgdir, (void*)sz, PGSIZE*shm->frame_counter, V2P(shm->frames[0]), PTE_W|PTE_U|PTE_P);
+    mappages(p->pgdir, (void*)PGROUNDUP(sz), PGSIZE*shm->frame_counter, V2P(shm->frames[0]), PTE_W|PTE_U|PTE_P);
     // growproc(PGSIZE * shm->frame_counter);    
     p->sz += PGSIZE * shm->frame_counter;
     shm->ref_count++;  
   }
    else {
-    mappages(p->pgdir, (void*)sz, PGSIZE*shm->frame_counter, V2P(shm->frames[0]), PTE_U|PTE_P);
+    mappages(p->pgdir, (void*)PGROUNDUP(sz), PGSIZE*shm->frame_counter, V2P(shm->frames[0]), PTE_U|PTE_P);
     // growproc(PGSIZE * shm->frame_counter);
 
     p->sz += PGSIZE * shm->frame_counter;
@@ -956,7 +966,9 @@ shm_attach(int id) {
   // cprintf("the frame counter is %d \n", shm->frame_counter);
   // cprintf("the size is: %d \n",p->sz);
 
-  return 0;
+  p->shm_info[p->number_of_shared_memories++].pa = sz;
+
+  return (void*)sz;
 }
 
 int 

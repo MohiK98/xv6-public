@@ -319,23 +319,46 @@ copyuvm(pde_t *pgdir, uint sz)
   pte_t *pte;
   uint pa, i, flags;
   char *mem;
+  // int i;
+  int flag = 0;
+
+  struct proc* parent = myproc();
 
   if((d = setupkvm()) == 0)
     return 0;
   for(i = 0; i < sz; i += PGSIZE){
+    flag = 0;
     if((pte = walkpgdir(pgdir, (void *) i, 0)) == 0)
       panic("copyuvm: pte should exist");
     if(!(*pte & PTE_P))
       panic("copyuvm: page not present");
     pa = PTE_ADDR(*pte);
     flags = PTE_FLAGS(*pte);
-    if((mem = kalloc()) == 0)
-      goto bad;
-    memmove(mem, (char*)P2V(pa), PGSIZE);
-    if(mappages(d, (void*)i, PGSIZE, V2P(mem), flags) < 0) {
+
+    if((parent->pid != 0 || parent->pid != 1) && i!= 0){
+      for(int k = 0; k < parent->number_of_shared_memories; k++){
+        if(parent->shm_info[k].pa == (i) && parent->number_of_shared_memories > 0){
+          flag = 1;
+          mem = (void*)parent->shm_info[i].pa; 
+          mappages(d, (void*)i, PGSIZE, V2P(i), flags);
+          break;
+        }
+      }
+    }    
+
+    
+    if(flag == 0){
+      if((mem = kalloc()) == 0)
+        goto bad;
+      memmove(mem, (char*)P2V(pa), PGSIZE);
+      if(mappages(d, (void*)i, PGSIZE, V2P(mem), flags) < 0) {
       kfree(mem);
       goto bad;
     }
+      
+    }
+
+    
   }
   return d;
 

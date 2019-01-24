@@ -3,12 +3,13 @@
 #include "user.h"
 #include "fcntl.h"
 
-#define NUM_OF_CHILDS 10
+#define NUM_OF_CHILDS 1 
 
 int
 main(int argc, char *argv[])
 {
 
+	char* arr;
 	if (argc != 4){
 		printf(1, "usage: shared memory id, pageCount, flag\n");
 		return 0;
@@ -17,18 +18,25 @@ main(int argc, char *argv[])
 	int id = atoi(argv[1]);
 	int flag = atoi(argv[3]);
 	shm_open(id, page_count, flag);
-	shm_attach(id);
+	
 	for (int i = 0; i < NUM_OF_CHILDS; i++) {
 		int pid = fork();
 		if (pid == 0){
-			shm_attach(id);
-			// shm_close(id);
+			arr = shm_attach(id);
+			// if (i == 0){
+			// printf(2,"lllllllllllll\n");
+			arr[5] = 'a';
+			printf(2,"______________ %c\n", arr[5]);
+			shm_close(id);
+			// }
 			exit();
 		} 
 	}
 	for (int i = 0; i < NUM_OF_CHILDS; i++) {
 		wait();
 	}
+	arr = shm_attach(id);
+	printf(2, "++++++ %c \n", arr[5]);
 	// shm_close(id);
 	exit();
 }
