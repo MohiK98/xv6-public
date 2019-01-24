@@ -23,9 +23,8 @@ main(int argc, char *argv[])
 		int pid = fork();
 		if (pid == 0){
 			arr = shm_attach(id);
-			arr[5] = 'a';
-			printf(2,"______________ %c\n", arr[5]);
-			shm_close(id);
+			arr[0] = 'a';
+			printf(1,"Child: |%c|\n", arr[0]);
 			exit();
 		} 
 	}
@@ -33,6 +32,6 @@ main(int argc, char *argv[])
 		wait();
 	}
 	arr = shm_attach(id);
-	printf(2, "++++++ %c \n", arr[5]);
+	printf(1, "Parent: |%c|\n", arr[0]);
 	exit();
 }

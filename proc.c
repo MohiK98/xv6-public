@@ -930,18 +930,16 @@ shm_attach(int id) {
   sz = p->sz;
 
   if(p->pid == shm->owner_pid){
-    mappages(p->pgdir, (void*)PGROUNDUP(sz), PGSIZE*shm->frame_counter, V2P(shm->frames[0]), PTE_W|PTE_U|PTE_P);
+    mappages(p->pgdir, (void*)PGROUNDUP(sz), PGSIZE*shm->frame_counter, V2P(shm->frames), PTE_W|PTE_U|PTE_P);
     p->sz += PGSIZE * shm->frame_counter;
   } 
   else if (shm->flag != ONLY_OWNER_WRITE && shm->flag != BOTH_FLAGS) {
-    mappages(p->pgdir, (void*)PGROUNDUP(sz), PGSIZE*shm->frame_counter, V2P(shm->frames[0]), PTE_W|PTE_U|PTE_P);
- 
+    mappages(p->pgdir, (void*)PGROUNDUP(sz), PGSIZE*shm->frame_counter, V2P(shm->frames), PTE_W|PTE_U|PTE_P);
     p->sz += PGSIZE * shm->frame_counter;
     shm->ref_count++;  
   }
    else {
-    mappages(p->pgdir, (void*)PGROUNDUP(sz), PGSIZE*shm->frame_counter, V2P(shm->frames[0]), PTE_U|PTE_P);
-
+    mappages(p->pgdir, (void*)PGROUNDUP(sz), PGSIZE*shm->frame_counter, V2P(shm->frames), PTE_U|PTE_P);
     p->sz += PGSIZE * shm->frame_counter;
     shm->ref_count++;
   }
