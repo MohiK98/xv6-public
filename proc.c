@@ -912,8 +912,8 @@ shm_attach(int id) {
   }
     
   if (shm->flag == ONLY_CHILD_CAN_ATTACH && shm->owner_pid != myproc()->parent->pid){
-    return 0;
     cprintf("only chid can attach \n");
+    return 0;
   } 
 
   struct proc *p;
