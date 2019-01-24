@@ -12,7 +12,7 @@ main(int argc, char *argv[])
 	char* arr;
 	if (argc != 4){
 		printf(1, "usage: shared memory id, pageCount, flag\n");
-		return 0;
+		exit();
 	}
 	int page_count = atoi(argv[2]);
 	int id = atoi(argv[1]);

@@ -69,7 +69,7 @@ mappages(pde_t *pgdir, void *va, uint size, uint pa, int perm)
     if((pte = walkpgdir(pgdir, a, 1)) == 0)
       return -1;
     if(*pte & PTE_P)
-      panic("remap++++");
+      panic("remap");
     *pte = pa | perm | PTE_P;
     if(a == last)
       break;
@@ -270,8 +270,6 @@ deallocuvm(pde_t *pgdir, uint oldsz, uint newsz)
       pa = PTE_ADDR(*pte);
       if(pa == 0)
         panic("kfree");
-      // char *v = P2V(pa);
-      // kfree(v);
       *pte = 0;
     }
   }
