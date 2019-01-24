@@ -931,28 +931,22 @@ shm_attach(int id) {
 
   if(p->pid == shm->owner_pid){
     mappages(p->pgdir, (void*)PGROUNDUP(sz), PGSIZE*shm->frame_counter, V2P(shm->frames[0]), PTE_W|PTE_U|PTE_P);
-    // growproc(PGSIZE * shm->frame_counter);
     p->sz += PGSIZE * shm->frame_counter;
   } 
   else if (shm->flag != ONLY_OWNER_WRITE && shm->flag != BOTH_FLAGS) {
     mappages(p->pgdir, (void*)PGROUNDUP(sz), PGSIZE*shm->frame_counter, V2P(shm->frames[0]), PTE_W|PTE_U|PTE_P);
-    // growproc(PGSIZE * shm->frame_counter);    
  
     p->sz += PGSIZE * shm->frame_counter;
     shm->ref_count++;  
   }
    else {
     mappages(p->pgdir, (void*)PGROUNDUP(sz), PGSIZE*shm->frame_counter, V2P(shm->frames[0]), PTE_U|PTE_P);
-    // growproc(PGSIZE * shm->frame_counter);
 
     p->sz += PGSIZE * shm->frame_counter;
     shm->ref_count++;
   }
   
   cprintf("new process with pid: %d attached. number of attachs: %d \n", p->pid, shm->ref_count);
-
-  // cprintf("the frame counter is %d \n", shm->frame_counter);
-  // cprintf("the size is: %d \n",p->sz);
 
   p->shm_info[p->number_of_shared_memories++].pa = sz;
 
